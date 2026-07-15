@@ -1,0 +1,707 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum SiteMode {
+  PRE_LAUNCH
+  COMMERCE
+}
+
+enum Locale {
+  RU
+  KZ
+  EN
+}
+
+enum ProductStatus {
+  DRAFT
+  PREVIEW
+  COMING_SOON
+  ACTIVE
+  ARCHIVED
+}
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum RuleStatus {
+  DRAFT
+  APPROVED
+  ARCHIVED
+}
+
+enum KnowledgeStatus {
+  DRAFT
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ConversationStatus {
+  ACTIVE
+  HANDED_OFF
+  CLOSED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+enum HandoffStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum CartStatus {
+  ACTIVE
+  CONVERTED
+  ABANDONED
+  EXPIRED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  FULFILLED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum FiscalStatus {
+  NOT_REQUIRED
+  PENDING
+  ISSUED
+  FAILED
+}
+
+enum EventConsentCategory {
+  NECESSARY
+  ANALYTICS
+  MARKETING
+}
+
+enum AnalyticsEventName {
+  PAGE_VIEW
+  VIEW_ITEM
+  SELECT_SIZE
+  ADD_TO_CART
+  BEGIN_CHECKOUT
+  PURCHASE
+  WAITLIST_SUBMIT
+  AI_OPEN
+  AI_RECOMMENDATION
+  AI_HANDOFF
+  AI_TEASER_SHOWN
+  AI_TEASER_CLOSED
+  AI_QUICK_ACTION_CLICKED
+  PRODUCT_CARD_MEDIA_SWAPPED
+  SCROLL_DEPTH
+  COOKIE_CONSENT_UPDATED
+  PAYMENT_METHOD_SELECTED
+  RETURN_REQUESTED
+}
+
+enum IdempotencyStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum AdminRole {
+  ADMIN
+  EDITOR
+}
+
+model SiteSettings {
+  id                   String   @id @default("default")
+  siteMode             SiteMode @default(PRE_LAUNCH)
+  demoMode             Boolean  @default(false)
+  catalogVisible       Boolean  @default(false)
+  controlledPreview    Boolean  @default(true)
+  defaultLocale        Locale   @default(RU)
+  currency             String   @default("KZT")
+  sectionVisibility    Json?
+  homeContent          Json?
+  brandAssets          Json?
+  paletteTokens        Json?
+  typographySettings   Json?
+  legalLinks           Json?
+  aiTeaserEnabled      Boolean  @default(true)
+  aiTeaserDelayMs      Int      @default(6500)
+  aiTeaserFrequency    String   @default("once_per_session")
+  aiQuickActions       Json?
+  consentPolicyVersion String   @default("2026-07-draft")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Product {
+  id                String        @id @default(cuid())
+  slug              String        @unique
+  nameRu            String
+  nameKz            String
+  nameEn            String?
+  descriptionRu     String
+  descriptionKz     String
+  descriptionEn     String?
+  status            ProductStatus @default(DRAFT)
+  category          String
+  priceMinor        Int?
+  comparePriceMinor Int?
+  currency          String        @default("KZT")
+  isPreorder        Boolean       @default(false)
+  preorderEta       DateTime?
+  media             Json?
+  technologyTags    Json?
+  careRu            String?
+  careKz            String?
+  careEn            String?
+  fitProfileId      String?
+  seoTitleRu        String?
+  seoTitleKz        String?
+  seoTitleEn        String?
+  seoDescriptionRu  String?
+  seoDescriptionKz  String?
+  seoDescriptionEn  String?
+  isDemo            Boolean       @default(false)
+  publishedAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  fitProfile       SizeProfile?      @relation(fields: [fitProfileId], references: [id], onDelete: SetNull)
+  variants         Variant[]
+  collections      Collection[]
+  bundleComponents BundleComponent[]
+  waitlistLeads    WaitlistLead[]
+  handoffTickets   HandoffTicket[]
+  conversations    Conversation[]
+  orderItems       OrderItem[]
+
+  @@index([status, isDemo])
+  @@index([category])
+}
+
+model Variant {
+  id                String    @id @default(cuid())
+  productId         String
+  colorCode         String
+  colorNameRu       String
+  colorNameKz       String
+  colorNameEn       String?
+  sizeLabel         String
+  sku               String    @unique
+  barcode           String?   @unique
+  stock             Int       @default(0)
+  reservedStock     Int       @default(0)
+  incomingEta       DateTime?
+  leadTimeDays      Int?
+  active            Boolean   @default(true)
+  priceMinor        Int?
+  comparePriceMinor Int?
+  media             Json?
+  isDemo            Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  waitlistLeads  WaitlistLead[]
+  handoffTickets HandoffTicket[]
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+
+  @@unique([productId, colorCode, sizeLabel])
+  @@index([productId, active])
+}
+
+model Collection {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  nameRu        String
+  nameKz        String
+  nameEn        String?
+  descriptionRu String?
+  descriptionKz String?
+  descriptionEn String?
+  status        PublishStatus @default(DRAFT)
+  heroMedia     Json?
+  sortOrder     Int           @default(0)
+  isDemo        Boolean       @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  products Product[]
+
+  @@index([status, isDemo, sortOrder])
+}
+
+model Bundle {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  nameRu        String
+  nameKz        String
+  nameEn        String?
+  descriptionRu String?
+  descriptionKz String?
+  descriptionEn String?
+  status        ProductStatus @default(DRAFT)
+  discountType  DiscountType  @default(PERCENTAGE)
+  /// Basis points for PERCENTAGE (1000 = 10%); minor units for FIXED.
+  discountValue Int           @default(0)
+  currency      String        @default("KZT")
+  media         Json?
+  isDemo        Boolean       @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  components BundleComponent[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([status, isDemo])
+}
+
+model BundleComponent {
+  id                    String  @id @default(cuid())
+  bundleId              String
+  productId             String
+  role                  String
+  requiredQuantity      Int     @default(1)
+  sortOrder             Int     @default(0)
+  allowSeparatePurchase Boolean @default(true)
+
+  bundle  Bundle  @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([bundleId, productId, role])
+  @@index([bundleId, sortOrder])
+}
+
+model SizeProfile {
+  id                          String   @id @default(cuid())
+  slug                        String   @unique
+  name                        String
+  fitType                     String
+  sizeChart                   Json?
+  garmentMeasurements         Json?
+  garmentMeasurementsApproved Boolean  @default(false)
+  isDemo                      Boolean  @default(false)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  products Product[]
+  rules    SizeRuleVersion[]
+}
+
+model SizeRuleVersion {
+  id            String     @id @default(cuid())
+  sizeProfileId String
+  version       Int
+  status        RuleStatus @default(DRAFT)
+  rules         Json
+  notes         String?
+  approvedBy    String?
+  approvedAt    DateTime?
+  effectiveAt   DateTime?
+  isDemo        Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  sizeProfile SizeProfile @relation(fields: [sizeProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([sizeProfileId, version])
+  @@index([sizeProfileId, status])
+}
+
+model KnowledgeItem {
+  id          String          @id @default(cuid())
+  language    Locale
+  scope       String
+  title       String
+  content     String
+  sourceOwner String
+  sourceId    String
+  status      KnowledgeStatus @default(DRAFT)
+  reviewDate  DateTime?
+  version     Int             @default(1)
+  isDemo      Boolean         @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@unique([sourceId, language, version])
+  @@index([language, scope, status, isDemo])
+}
+
+model JournalArticle {
+  id               String        @id @default(cuid())
+  slug             String        @unique
+  titleRu          String
+  titleKz          String
+  titleEn          String?
+  excerptRu        String
+  excerptKz        String
+  excerptEn        String?
+  contentRu        String
+  contentKz        String
+  contentEn        String?
+  coverImage       String?
+  author           String?
+  status           PublishStatus @default(DRAFT)
+  isDemo           Boolean       @default(false)
+  publishedAt      DateTime?
+  seoTitleRu       String?
+  seoTitleKz       String?
+  seoTitleEn       String?
+  seoDescriptionRu String?
+  seoDescriptionKz String?
+  seoDescriptionEn String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([status, isDemo, publishedAt])
+}
+
+model WaitlistLead {
+  id               String   @id @default(cuid())
+  productId        String?
+  variantId        String?
+  color            String?
+  size             String?
+  city             String?
+  name             String
+  email            String?
+  phone            String?
+  contactPurpose   String
+  serviceConsent   Boolean
+  restockConsent   Boolean  @default(false)
+  marketingConsent Boolean  @default(false)
+  policyVersion    String
+  language         Locale
+  source           String
+  dedupKey         String   @unique
+  submissionCount  Int      @default(1)
+  lastSubmittedAt  DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant Variant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([productId, color, size, city])
+  @@index([createdAt])
+}
+
+model HandoffTicket {
+  id                String        @id @default(cuid())
+  idempotencyKey    String?       @unique
+  conversationId    String?
+  reason            String
+  userQuestion      String
+  productId         String?
+  selectedVariantId String?
+  aiConfidence      String?
+  summary           String?
+  contactName       String?
+  contactEmail      String?
+  contactPhone      String?
+  contactConsent    Boolean       @default(false)
+  policyVersion     String
+  status            HandoffStatus @default(OPEN)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  resolvedAt        DateTime?
+
+  conversation    Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  product         Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  selectedVariant Variant?      @relation(fields: [selectedVariantId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([conversationId])
+}
+
+model Conversation {
+  id            String             @id @default(cuid())
+  sessionId     String
+  language      Locale
+  status        ConversationStatus @default(ACTIVE)
+  currentPage   String?
+  entryPoint    String?
+  productId     String?
+  context       Json?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  lastMessageAt DateTime?
+
+  product  Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  messages Message[]
+  handoffs HandoffTicket[]
+
+  @@index([sessionId, status])
+  @@index([updatedAt])
+}
+
+model Message {
+  id             String      @id @default(cuid())
+  conversationId String
+  role           MessageRole
+  content        String
+  metadata       Json?
+  correlationId  String?
+  createdAt      DateTime    @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([correlationId])
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  token     String     @unique
+  sessionId String?
+  language  Locale     @default(RU)
+  currency  String     @default("KZT")
+  status    CartStatus @default(ACTIVE)
+  expiresAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  items CartItem[]
+  order Order?
+
+  @@index([sessionId, status])
+  @@index([status, expiresAt])
+}
+
+model CartItem {
+  id              String   @id @default(cuid())
+  cartId          String
+  variantId       String
+  quantity        Int      @default(1)
+  unitPriceMinor  Int
+  discountMinor   Int      @default(0)
+  bundleId        String?
+  bundleGroupId   String?
+  componentRole   String?
+  priceSnapshotAt DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  bundle  Bundle? @relation(fields: [bundleId], references: [id], onDelete: SetNull)
+
+  @@index([cartId])
+  @@index([bundleGroupId])
+}
+
+model Order {
+  id                   String        @id @default(cuid())
+  number               String        @unique
+  statusTokenHash      String?       @unique
+  cartId               String?       @unique
+  idempotencyKey       String        @unique
+  requestFingerprint   String
+  status               OrderStatus   @default(PENDING)
+  paymentStatus        PaymentStatus @default(UNPAID)
+  fiscalStatus         FiscalStatus  @default(NOT_REQUIRED)
+  currency             String        @default("KZT")
+  subtotalMinor        Int
+  discountMinor        Int           @default(0)
+  deliveryMinor        Int           @default(0)
+  totalMinor           Int
+  customerName         String
+  customerEmail        String?
+  customerPhone        String?
+  city                 String
+  address              String
+  deliveryMethod       String
+  customerComment      String?
+  paymentMethod        String?
+  paymentProvider      String?
+  paymentReference     String?
+  language             Locale        @default(RU)
+  consentPolicyVersion String
+  termsAcceptedAt      DateTime
+  isTest               Boolean       @default(false)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  confirmedAt          DateTime?
+  fulfilledAt          DateTime?
+  cancelledAt          DateTime?
+
+  cart  Cart?       @relation(fields: [cartId], references: [id], onDelete: SetNull)
+  items OrderItem[]
+
+  @@index([status, createdAt])
+  @@index([customerEmail])
+  @@index([customerPhone])
+}
+
+model OrderItem {
+  id             String   @id @default(cuid())
+  orderId        String
+  productId      String?
+  variantId      String?
+  bundleId       String?
+  bundleGroupId  String?
+  componentRole  String?
+  productName    String
+  sku            String
+  color          String
+  size           String
+  quantity       Int
+  unitPriceMinor Int
+  discountMinor  Int      @default(0)
+  totalMinor     Int
+  createdAt      DateTime @default(now())
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant Variant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  bundle  Bundle?  @relation(fields: [bundleId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([bundleGroupId])
+}
+
+model ConsentRecord {
+  id            String   @id @default(cuid())
+  subjectId     String
+  necessary     Boolean  @default(true)
+  analytics     Boolean  @default(false)
+  marketing     Boolean  @default(false)
+  policyVersion String
+  source        String
+  createdAt     DateTime @default(now())
+
+  @@index([subjectId, createdAt])
+}
+
+model AnalyticsEvent {
+  id              String               @id @default(cuid())
+  name            AnalyticsEventName
+  consentCategory EventConsentCategory
+  sessionId       String?
+  anonymousId     String?
+  language        Locale?
+  correlationId   String?
+  payload         Json?
+  createdAt       DateTime             @default(now())
+
+  @@index([name, createdAt])
+  @@index([sessionId, createdAt])
+}
+
+model Translation {
+  id          String        @id @default(cuid())
+  namespace   String
+  key         String
+  locale      Locale
+  value       String
+  status      PublishStatus @default(DRAFT)
+  version     Int           @default(1)
+  publishedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([namespace, key, locale])
+  @@index([locale, namespace, status])
+}
+
+model ContentPage {
+  id               String        @id @default(cuid())
+  slug             String
+  locale           Locale
+  title            String
+  excerpt          String?
+  content          String
+  status           PublishStatus @default(DRAFT)
+  version          Int           @default(1)
+  requiresApproval Boolean       @default(true)
+  seoTitle         String?
+  seoDescription   String?
+  publishedAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@unique([slug, locale])
+  @@index([status, locale])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(EDITOR)
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  auditLogs AuditLog[]
+}
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  adminUserId   String?
+  action        String
+  entityType    String
+  entityId      String?
+  before        Json?
+  after         Json?
+  correlationId String?
+  ipHash        String?
+  createdAt     DateTime @default(now())
+
+  adminUser AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([adminUserId, createdAt])
+}
+
+model IdempotencyRecord {
+  id          String            @id @default(cuid())
+  scope       String
+  key         String
+  fingerprint String
+  status      IdempotencyStatus @default(IN_PROGRESS)
+  resourceId  String?
+  response    Json?
+  errorCode   String?
+  expiresAt   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([scope, key])
+  @@index([status, expiresAt])
+}

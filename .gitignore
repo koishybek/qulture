@@ -1,0 +1,28 @@
+# dependencies
+/node_modules/
+
+# Next.js
+/.next/
+/out/
+
+# local data and generated artifacts
+/prisma/*.db
+/prisma/*.db-journal
+/prisma/*.db-shm
+/prisma/*.db-wal
+/generated/prisma/
+/playwright-report/
+/test-results/
+/coverage/
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# local tooling
+.DS_Store
+Thumbs.db
+*.log
+*.tsbuildinfo
+
