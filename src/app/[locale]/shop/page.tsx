@@ -7,6 +7,7 @@ import { PublicCatalogPage } from "@/components/commerce/public-catalog-page";
 import { getCommerceSettings, getDemoProducts } from "@/lib/commerce/catalog";
 import { isDemoCommerceRequested } from "@/lib/commerce/demo-gate";
 import { getPublicCatalog } from "@/lib/commerce/public-catalog";
+import { commerceText } from "@/lib/commerce/locale";
 import { isLocale } from "@/lib/i18n";
 import { absoluteSiteUrl, configuredSiteOrigin } from "@/lib/site-origin";
 
@@ -29,15 +30,21 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     ? absoluteSiteUrl(origin, `/${locale}/shop`)
     : null;
   return {
-    title: demo ? "Demo catalog" : isLocale(locale) && locale === "kz" ? "Каталог" : "Магазин",
+    title: demo
+      ? "Demo catalog"
+      : isLocale(locale)
+        ? commerceText(locale, "Shop", "Магазин", "Каталог")
+        : "Shop",
     robots: demo ? { index: false, follow: false } : undefined,
     ...(!demo && canonical
       ? {
           alternates: {
             canonical,
             languages: {
+              en: absoluteSiteUrl(origin, "/en/shop")!,
               ru: absoluteSiteUrl(origin, "/ru/shop")!,
               kk: absoluteSiteUrl(origin, "/kz/shop")!,
+              "x-default": absoluteSiteUrl(origin, "/en/shop")!,
             },
           },
         }

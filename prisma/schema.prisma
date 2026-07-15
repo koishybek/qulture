@@ -145,7 +145,7 @@ model SiteSettings {
   demoMode             Boolean  @default(false)
   catalogVisible       Boolean  @default(false)
   controlledPreview    Boolean  @default(true)
-  defaultLocale        Locale   @default(RU)
+  defaultLocale        Locale   @default(EN)
   currency             String   @default("KZT")
   sectionVisibility    Json?
   homeContent          Json?

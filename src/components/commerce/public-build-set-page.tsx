@@ -9,6 +9,7 @@ import type {
   PublicCatalogLocale,
   PublicVariantView,
 } from "@/lib/commerce/public-catalog";
+import { commerceIntlLocale, commerceText } from "@/lib/commerce/locale";
 
 import { useCart } from "./cart-provider";
 
@@ -18,7 +19,7 @@ function formatMoney(
   locale: PublicCatalogLocale,
 ): string {
   try {
-    return new Intl.NumberFormat(locale === "ru" ? "ru-KZ" : "kk-KZ", {
+    return new Intl.NumberFormat(commerceIntlLocale(locale), {
       style: "currency",
       currency,
       maximumFractionDigits: 0,
@@ -47,20 +48,11 @@ function availabilityLabel(
   variant: PublicVariantView,
   locale: PublicCatalogLocale,
 ): string {
-  const labels =
-    locale === "ru"
-      ? {
-          in_stock: "В наличии",
-          low_stock: "Осталось немного",
-          preorder: "Предзаказ",
-          unavailable: "Недоступно",
-        }
-      : {
-          in_stock: "Қолда бар",
-          low_stock: "Аз қалды",
-          preorder: "Алдын ала тапсырыс",
-          unavailable: "Қолжетімсіз",
-        };
+  const labels = locale === "en"
+    ? { in_stock: "In stock", low_stock: "Low stock", preorder: "Pre-order", unavailable: "Unavailable" }
+    : locale === "ru"
+      ? { in_stock: "В наличии", low_stock: "Осталось немного", preorder: "Предзаказ", unavailable: "Недоступно" }
+      : { in_stock: "Қолда бар", low_stock: "Аз қалды", preorder: "Алдын ала тапсырыс", unavailable: "Қолжетімсіз" };
   return labels[variant.availability];
 }
 
@@ -91,7 +83,7 @@ function SetModule({
   position: string;
   selectedId: string;
 }) {
-  const isRu = locale === "ru";
+  const t = (en: string, ru: string, kz: string) => commerceText(locale, en, ru, kz);
   const selected = selectedVariant(component, selectedId);
   const media = selected?.media[0] ?? component.product.media[0];
   return (
@@ -108,16 +100,14 @@ function SetModule({
         <span>
           {media
             ? component.role.toUpperCase()
-            : isRu
-              ? "МЕДИА ГОТОВИТСЯ"
-              : "МЕДИА ДАЙЫНДАЛУДА"}
+            : t("MEDIA IN PROGRESS", "МЕДИА ГОТОВИТСЯ", "МЕДИА ДАЙЫНДАЛУДА")}
         </span>
       </div>
       <div className="build-module__body">
         <p className="q-meta">{position} / {component.role}</p>
         <h2>{component.product.name}</h2>
         <fieldset className="demo-size-picker">
-          <legend>{isRu ? "Цвет и размер" : "Түс пен өлшем"}</legend>
+          <legend>{t("Colour and size", "Цвет и размер", "Түс пен өлшем")}</legend>
           <div>
             {component.product.variants.map((variant) => (
               <button
@@ -141,7 +131,7 @@ function SetModule({
             )}
           </strong>
         ) : (
-          <small>{isRu ? "Цена уточняется" : "Бағасы нақтылануда"}</small>
+          <small>{t("Price on request", "Цена уточняется", "Бағасы нақтылануда")}</small>
         )}
       </div>
     </article>
@@ -155,7 +145,7 @@ export function PublicBuildSetPage({
   bundle: PublicBundleView;
   locale: PublicCatalogLocale;
 }) {
-  const isRu = locale === "ru";
+  const t = (en: string, ru: string, kz: string) => commerceText(locale, en, ru, kz);
   const { addLines } = useCart();
   const top = bundle.components.find((component) => component.role === "top");
   const pants = bundle.components.find((component) => component.role === "pants");
@@ -170,14 +160,10 @@ export function PublicBuildSetPage({
       <section className="q-page" role="status">
         <p className="q-meta">QULTURE / SET STATUS</p>
         <h1>
-          {isRu
-            ? "Комплект пока нельзя собрать"
-            : "Жинақты әзірге құру мүмкін емес"}
+          {t("This set cannot be built yet", "Комплект пока нельзя собрать", "Жинақты әзірге құру мүмкін емес")}
         </h1>
         <p>
-          {isRu
-            ? "Для опубликованного комплекта нужны верхний и нижний модули."
-            : "Жарияланған жинаққа жоғарғы және төменгі модульдер қажет."}
+          {t("A published set needs both the upper and lower modules.", "Для опубликованного комплекта нужны верхний и нижний модули.", "Жарияланған жинаққа жоғарғы және төменгі модульдер қажет.")}
         </p>
       </section>
     );
@@ -239,8 +225,10 @@ export function PublicBuildSetPage({
         variantId: selectedTop.id,
         slug: topComponent.product.slug,
         name: topComponent.product.name,
+        nameByLocale: topComponent.product.nameByLocale,
         role: "top",
         color: selectedTop.color,
+        colorByLocale: selectedTop.colorByLocale,
         size: selectedTop.size,
         quantity: topComponent.requiredQuantity,
         unitPrice: selectedTop.priceMinor,
@@ -258,7 +246,7 @@ export function PublicBuildSetPage({
         variantOptions: topComponent.product.variants.filter(
           (variant): variant is PublicVariantView & { priceMinor: number } =>
             variant.canAddToCart && variant.priceMinor !== null,
-        ).map((variant) => ({ variantId: variant.id, size: variant.size, color: variant.color, unitPrice: variant.priceMinor, availability: cartAvailability(variant), eta: variant.incomingEta ?? topComponent.product.preorderEta ?? undefined, mediaSrc: (variant.media[0] ?? topComponent.product.media[0])?.src, mediaAlt: (variant.media[0] ?? topComponent.product.media[0])?.alt })),
+        ).map((variant) => ({ variantId: variant.id, size: variant.size, color: variant.color, colorByLocale: variant.colorByLocale, unitPrice: variant.priceMinor, availability: cartAvailability(variant), eta: variant.incomingEta ?? topComponent.product.preorderEta ?? undefined, mediaSrc: (variant.media[0] ?? topComponent.product.media[0])?.src, mediaAlt: (variant.media[0] ?? topComponent.product.media[0])?.alt })),
       },
       {
         id: `${groupId}-${selectedPants.id}`,
@@ -266,8 +254,10 @@ export function PublicBuildSetPage({
         variantId: selectedPants.id,
         slug: pantsComponent.product.slug,
         name: pantsComponent.product.name,
+        nameByLocale: pantsComponent.product.nameByLocale,
         role: "pants",
         color: selectedPants.color,
+        colorByLocale: selectedPants.colorByLocale,
         size: selectedPants.size,
         quantity: pantsComponent.requiredQuantity,
         unitPrice: selectedPants.priceMinor,
@@ -285,11 +275,11 @@ export function PublicBuildSetPage({
         variantOptions: pantsComponent.product.variants.filter(
           (variant): variant is PublicVariantView & { priceMinor: number } =>
             variant.canAddToCart && variant.priceMinor !== null,
-        ).map((variant) => ({ variantId: variant.id, size: variant.size, color: variant.color, unitPrice: variant.priceMinor, availability: cartAvailability(variant), eta: variant.incomingEta ?? pantsComponent.product.preorderEta ?? undefined, mediaSrc: (variant.media[0] ?? pantsComponent.product.media[0])?.src, mediaAlt: (variant.media[0] ?? pantsComponent.product.media[0])?.alt })),
+        ).map((variant) => ({ variantId: variant.id, size: variant.size, color: variant.color, colorByLocale: variant.colorByLocale, unitPrice: variant.priceMinor, availability: cartAvailability(variant), eta: variant.incomingEta ?? pantsComponent.product.preorderEta ?? undefined, mediaSrc: (variant.media[0] ?? pantsComponent.product.media[0])?.src, mediaAlt: (variant.media[0] ?? pantsComponent.product.media[0])?.alt })),
       },
     ]);
     setNotice(
-      isRu ? "Комплект добавлен в корзину." : "Жинақ себетке қосылды.",
+      t("Set added to bag.", "Комплект добавлен в корзину.", "Жинақ себетке қосылды."),
     );
     window.dispatchEvent(new CustomEvent("qulture:open-cart"));
   }
@@ -327,11 +317,9 @@ export function PublicBuildSetPage({
         />
 
         <aside className="build-set-demo__summary">
-          <p className="q-meta">03 / {isRu ? "КОМПЛЕКТ" : "ЖИНАҚ"}</p>
+          <p className="q-meta">03 / {t("SET", "КОМПЛЕКТ", "ЖИНАҚ")}</p>
           <h2>
-            {isRu
-              ? "Размеры выбираются отдельно"
-              : "Өлшемдер бөлек таңдалады"}
+            {t("Sizes are selected independently", "Размеры выбираются отдельно", "Өлшемдер бөлек таңдалады")}
           </h2>
           <div className="build-set-demo__chosen">
             <span>TOP</span><strong>{selectedTop?.size ?? "—"}</strong>
@@ -340,12 +328,12 @@ export function PublicBuildSetPage({
           {subtotal !== null && discount !== null && total !== null ? (
             <dl>
               <div>
-                <dt>{isRu ? "Сумма модулей" : "Модульдер сомасы"}</dt>
+                <dt>{t("Module subtotal", "Сумма модулей", "Модульдер сомасы")}</dt>
                 <dd>{formatMoney(subtotal, bundle.currency, locale)}</dd>
               </div>
               <div>
                 <dt>
-                  {isRu ? "Скидка комплекта" : "Жинақ жеңілдігі"}
+                  {t("Set saving", "Скидка комплекта", "Жинақ жеңілдігі")}
                   {bundle.discount.percent !== null
                     ? ` ${bundle.discount.percent}%`
                     : ""}
@@ -353,15 +341,13 @@ export function PublicBuildSetPage({
                 <dd>− {formatMoney(discount, bundle.currency, locale)}</dd>
               </div>
               <div>
-                <dt>{isRu ? "Итого" : "Барлығы"}</dt>
+                <dt>{t("Total", "Итого", "Барлығы")}</dt>
                 <dd>{formatMoney(total, bundle.currency, locale)}</dd>
               </div>
             </dl>
           ) : (
             <p className="q-status" data-kind="error">
-              {isRu
-                ? "Итог появится после публикации цен обоих модулей."
-                : "Екі модульдің бағасы жарияланғаннан кейін қорытынды шығады."}
+              {t("The total appears once both module prices are published.", "Итог появится после публикации цен обоих модулей.", "Екі модульдің бағасы жарияланғаннан кейін қорытынды шығады.")}
             </p>
           )}
           <button
@@ -370,23 +356,19 @@ export function PublicBuildSetPage({
             onClick={addSet}
             type="button"
           >
-            {isRu ? "Добавить комплект" : "Жинақты қосу"}
+            {t("Add set", "Добавить комплект", "Жинақты қосу")}
             <span aria-hidden="true">→</span>
           </button>
           {!canAdd ? (
             <p className="q-status" data-kind="error">
-              {isRu
-                ? "Выберите доступные варианты с опубликованной ценой."
-                : "Бағасы жарияланған қолжетімді нұсқаларды таңдаңыз."}
+              {t("Choose available options with a published price.", "Выберите доступные варианты с опубликованной ценой.", "Бағасы жарияланған қолжетімді нұсқаларды таңдаңыз.")}
             </p>
           ) : null}
           <p aria-live="polite" className="q-status" data-kind="success">
             {notice}
           </p>
           <small>
-            {isRu
-              ? "Цена и доступность будут заново проверены сервером при оформлении."
-              : "Рәсімдеу кезінде баға мен қолжетімділікті сервер қайта тексереді."}
+            {t("Price and availability are verified by the server again at checkout.", "Цена и доступность будут заново проверены сервером при оформлении.", "Рәсімдеу кезінде баға мен қолжетімділікті сервер қайта тексереді.")}
           </small>
         </aside>
       </div>

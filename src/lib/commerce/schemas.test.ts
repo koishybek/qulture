@@ -33,6 +33,10 @@ describe("demoOrderRequestSchema", () => {
     expect(result.lines).toEqual([{ variantId: "variant-1", quantity: 1 }]);
   });
 
+  it("accepts English checkout requests", () => {
+    expect(demoOrderRequestSchema.parse({ ...validOrder, locale: "en" }).locale).toBe("en");
+  });
+
   it("requires sale terms and service consent", () => {
     expect(
       demoOrderRequestSchema.safeParse({ ...validOrder, termsAccepted: false }).success,
@@ -57,4 +61,3 @@ describe("demoOrderRequestSchema", () => {
     ).toBe(false);
   });
 });
-

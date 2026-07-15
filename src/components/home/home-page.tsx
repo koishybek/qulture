@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+
 import { OpenAIButton } from "@/components/ai/open-ai-button";
 import { WaitlistForm } from "@/components/forms/waitlist-form";
 import { HeroMedia } from "@/components/site/hero-media";
@@ -15,69 +16,240 @@ type HomePresentation = {
   captureEnabled?: boolean;
 };
 
-const copy = {
-  ru: {
-    heroSubtitle: "Городская одежда для ветра, слоёв и движения.",
-    heroPrimary: "Смотреть систему",
-    heroSecondary: "AI-консультант",
-    systemLine: "Один комплект. Два независимых размера.",
-    systemBody: "Соберите систему целиком или выберите только нужный слой.",
-    viewSystem: "Смотреть систему",
-    soon: "Скоро",
-    principles: ["Логика слоёв", "Сценарии климата", "Материалы", "Движение в городе"],
-    scenariosTitle: "From street to inside",
-    scenarios: ["Улица", "Автомобиль", "Транспорт", "Помещение"],
-    layers: "Solo + base layer + outerwear",
-    proofBody: "Замеры, материалы и тесты публикуются только после проверки.",
-    proofCta: "Получать обновления",
-    proofItems: ["Снятие мерок и посадка", "Материалы и фурнитура", "Тесты на движение", "Конструктивные узлы", "Уход и эксплуатация", "Данные модели"],
-    inProgress: "В работе",
-    aiBody: "Помогу разобраться в системе, размере и сценариях носки.",
-    aiActions: ["Помочь выбрать размер", "Сравнить set и компоненты", "Спросить о климате", "Передать вопрос команде"],
-    openAI: "Открыть консультанта",
-    brandBody: "Мы проектируем систему для городского движения и переменчивой среды.",
-    journalBody: "Без выдуманных дат. Публикуем только подтверждённый прогресс.",
-    readJournal: "Читать журнал",
-    waitlistBody: "Узнайте, когда система будет готова.",
-    progress: ["Тесты на движение", "Конструктивные узлы", "Материалы и фурнитура", "Данные модели"],
-  },
-  kz: {
-    heroSubtitle: "Желге, қабаттарға және қозғалысқа арналған қалалық киім.",
-    heroPrimary: "Жүйені көру",
-    heroSecondary: "AI-кеңесші",
-    systemLine: "Бір жиынтық. Екі тәуелсіз өлшем.",
-    systemBody: "Жүйені толық жинаңыз немесе қажет қабатты ғана таңдаңыз.",
-    viewSystem: "Жүйені көру",
-    soon: "Жақында",
-    principles: ["Қабаттау логикасы", "Климат сценарийлері", "Материалдар", "Қала қозғалысы"],
-    scenariosTitle: "Көшеден ғимаратқа дейін",
-    scenarios: ["Көше", "Автокөлік", "Көлік", "Ғимарат"],
-    layers: "Solo + негізгі қабат + сыртқы киім",
-    proofBody: "Өлшемдер, материалдар және сынақтар тек тексерілгеннен кейін жарияланады.",
-    proofCta: "Жаңартуларды алу",
-    proofItems: ["Өлшем және пішім", "Материалдар мен фурнитура", "Қозғалыс сынақтары", "Құрылымдық түйіндер", "Күтім және пайдалану", "Модель деректері"],
-    inProgress: "Жұмыста",
-    aiBody: "Жүйе, өлшем және кию сценарийлерін түсіндіруге көмектесемін.",
-    aiActions: ["Өлшем таңдауға көмектесу", "Жиынтық пен бөліктерді салыстыру", "Климат туралы сұрау", "Командаға сұрақ беру"],
-    openAI: "Кеңесшіні ашу",
-    brandBody: "Біз қала қозғалысы мен құбылмалы ортаға арналған жүйені жобалаймыз.",
-    journalBody: "Ойдан шығарылған күндерсіз. Тек расталған прогресті жариялаймыз.",
-    readJournal: "Журналды оқу",
-    waitlistBody: "Жүйе дайын болғанда біліңіз.",
-    progress: ["Қозғалыс сынақтары", "Құрылымдық түйіндер", "Материалдар мен фурнитура", "Модель деректері"],
-  },
-} as const;
+type ProductStudyProps = {
+  action: string;
+  alt: string;
+  href: string;
+  label: string;
+  position: "set" | "top" | "pants";
+  soon: string;
+};
+
+type ScenarioFrameProps = {
+  alt: string;
+  label: string;
+  layer: string;
+  position: "street" | "car" | "transit" | "inside";
+};
 
 function route(locale: Locale, path: string) {
   return `/${locale}${path}`;
 }
+
+function ProductStudy({ action, alt, href, label, position, soon }: ProductStudyProps) {
+  return (
+    <Link className={`product-study product-study--${position}`} href={href}>
+      <span className="product-study__head"><strong>{label}</strong><span>{soon}</span></span>
+      <span className="product-study__media">
+        <Image fill alt={alt} sizes="(max-width: 700px) 50vw, (max-width: 1100px) 33vw, 26vw" src="/media/hero/hero-poster.png" />
+      </span>
+      <span className="product-study__action">{action} <ArrowIcon /></span>
+    </Link>
+  );
+}
+
+function ScenarioFrame({ alt, label, layer, position }: ScenarioFrameProps) {
+  return (
+    <figure className={`scenario-frame scenario-frame--${position}`}>
+      <div className="scenario-frame__media">
+        <Image fill alt={alt} sizes="(max-width: 700px) 82vw, (max-width: 1100px) 44vw, 28vw" src="/media/editorial/city-scenarios.png" />
+      </div>
+      <figcaption>
+        <strong>{label}</strong>
+        <span>{layer}</span>
+      </figcaption>
+    </figure>
+  );
+}
+
+const copy = {
+  en: {
+    heroTitle: "DESIGNED FOR\nCHANGING CLIMATES.",
+    heroSubtitle: "Urban clothing for wind, layers and movement.",
+    heroPrimary: "Explore the system",
+    heroSecondary: "Ask QULTURE AI",
+    systemMeta: "02 / City layer system",
+    systemTitle: "CITY LAYER\nSYSTEM",
+    systemLine: "One set. Two independent sizes.",
+    systemBody: "Build the whole system or choose only the layer you need.",
+    viewSystem: "Explore the system",
+    soon: "In development",
+    set: "Set",
+    top: "Top",
+    pants: "Trousers",
+    setAction: "City Layer Set",
+    topAction: "City Layer Top",
+    pantsAction: "City Layer Trousers",
+    principles: ["Layering logic", "Climate scenarios", "Material construction", "Movement in the city"],
+    scenariosMeta: "03 / City route",
+    scenariosTitle: "FROM STREET\nTO INSIDE",
+    scenarios: ["Street", "Car", "Transit", "Interior"],
+    layers: ["Solo / base / outerwear", "Seated / articulated", "Mobile / protected", "Layer off / reset"],
+    proofMeta: "04 / Evidence index",
+    proofTitle: "PROOF,\nNOT PROMISES",
+    proofBody: "Measurements, materials and tests are published only after verification.",
+    proofCta: "Receive updates",
+    proofItems: [
+      ["Layering logic", "Publishing after fit-system verification."],
+      ["Material construction", "Documentation in progress."],
+      ["Fit and movement", "Testing across real city routes."],
+      ["Climate scenarios", "Publishing after field verification."],
+      ["Care and longevity", "Care guidance is being prepared."],
+    ],
+    proofStatus: "In testing",
+    aiMeta: "05 / QULTURE Assist",
+    aiTitle: "ASK QULTURE",
+    aiBody: "Find a size, build for a climate or compare the system with confirmed product context.",
+    aiActions: ["Find my size", "Build for my climate", "Compare the set", "Explain the material", "Delivery & returns", "Speak to a consultant"],
+    openAI: "Open the assistant",
+    aiPreviewTitle: "QULTURE AI / product context",
+    aiPreviewStatus: "Ready",
+    aiPreviewQuestion: "What should I wear between transit and the studio?",
+    aiPreviewAnswer: "Start with the City Layer Set. I can narrow the recommendation once you share your city and typical commute.",
+    aiPreviewPrompt: "Ask about your climate or fit…",
+    brandMeta: "06 / Astana, Kazakhstan",
+    brandTitle: "DESIGNED IN ASTANA.\nBUILT FOR CHANGING CLIMATES.",
+    brandBody: "A city system for shifting wind, transport, streets and interiors — observed from Astana, then tested in movement.",
+    journalMeta: "Journal / progress",
+    journalTitle: "BUILDING THE\nCITY LAYER SYSTEM",
+    journalBody: "No invented dates. We publish only verified progress and the work still in motion.",
+    journalCta: "View journal",
+    latestUpdates: "Latest updates",
+    progress: ["Fit and movement", "Construction details", "Materials and hardware", "Model data"],
+    waitlistMeta: "07 / Launch updates",
+    waitlistTitle: "JOIN THE WAITLIST",
+    waitlistBody: "Get a note when the configuration you selected becomes available.",
+    altSet: "The complete QULTURE City Layer Set",
+    altTop: "Close study of the QULTURE City Layer Top",
+    altPants: "Detail study of the QULTURE City Layer Trousers",
+  },
+  ru: {
+    heroTitle: "СОЗДАНО ДЛЯ\nМЕНЯЮЩЕГОСЯ КЛИМАТА.",
+    heroSubtitle: "Городская одежда для ветра, слоёв и движения.",
+    heroPrimary: "Смотреть систему",
+    heroSecondary: "Спросить QULTURE AI",
+    systemMeta: "02 / Система городских слоёв",
+    systemTitle: "СИСТЕМА\nГОРОДСКИХ СЛОЁВ",
+    systemLine: "Один комплект. Два независимых размера.",
+    systemBody: "Соберите систему целиком или выберите только нужный слой.",
+    viewSystem: "Смотреть систему",
+    soon: "В разработке",
+    set: "Комплект",
+    top: "Верх",
+    pants: "Брюки",
+    setAction: "Комплект City Layer",
+    topAction: "Верх City Layer",
+    pantsAction: "Брюки City Layer",
+    principles: ["Логика слоёв", "Сценарии климата", "Конструкция материала", "Движение в городе"],
+    scenariosMeta: "03 / Городской маршрут",
+    scenariosTitle: "ОТ УЛИЦЫ\nК ПОМЕЩЕНИЮ",
+    scenarios: ["Улица", "Автомобиль", "Транспорт", "Помещение"],
+    layers: ["Соло / базовый / верхний", "Сидя / свободно", "В движении / защищён", "Снять слой / восстановить"],
+    proofMeta: "04 / Индекс доказательств",
+    proofTitle: "ДОКАЗАТЕЛЬСТВА,\nНЕ ОБЕЩАНИЯ",
+    proofBody: "Замеры, материалы и тесты публикуются только после проверки.",
+    proofCta: "Получать обновления",
+    proofItems: [
+      ["Логика слоёв", "Публикуем после проверки системы посадки."],
+      ["Конструкция материала", "Документация в процессе."],
+      ["Посадка и движение", "Тестируем на реальных городских маршрутах."],
+      ["Сценарии климата", "Опубликуем после полевой проверки."],
+      ["Уход и долговечность", "Готовим инструкции по уходу."],
+    ],
+    proofStatus: "В тестировании",
+    aiMeta: "05 / QULTURE Assist",
+    aiTitle: "СПРОСИТЬ QULTURE",
+    aiBody: "Поможем выбрать размер, собрать систему под климат и сравнить вещи с подтверждённым контекстом продукта.",
+    aiActions: ["Подобрать размер", "Собрать под мой климат", "Сравнить комплект", "Объяснить материал", "Доставка и возврат", "Связаться с консультантом"],
+    openAI: "Открыть консультанта",
+    aiPreviewTitle: "QULTURE AI / контекст продукта",
+    aiPreviewStatus: "Готов",
+    aiPreviewQuestion: "Что надеть между транспортом и студией?",
+    aiPreviewAnswer: "Начните с комплекта City Layer. Я уточню рекомендацию, если вы расскажете о городе и обычном маршруте.",
+    aiPreviewPrompt: "Спросите о климате или посадке…",
+    brandMeta: "06 / Астана, Казахстан",
+    brandTitle: "СОЗДАНО В АСТАНЕ.\nДЛЯ МЕНЯЮЩЕГОСЯ КЛИМАТА.",
+    brandBody: "Система для ветра, транспорта, улицы и помещения — наблюдаемая в Астане и проверяемая в движении.",
+    journalMeta: "Журнал / прогресс",
+    journalTitle: "СОЗДАЁМ\nСИСТЕМУ CITY LAYER",
+    journalBody: "Без выдуманных дат. Публикуем только подтверждённый прогресс и работу, которая ещё продолжается.",
+    journalCta: "Открыть журнал",
+    latestUpdates: "Последние обновления",
+    progress: ["Посадка и движение", "Конструктивные узлы", "Материалы и фурнитура", "Данные модели"],
+    waitlistMeta: "07 / Новости запуска",
+    waitlistTitle: "ВСТУПИТЬ В ЛИСТ ОЖИДАНИЯ",
+    waitlistBody: "Сообщим, когда выбранная вами конфигурация станет доступна.",
+    altSet: "Полный комплект QULTURE City Layer",
+    altTop: "Крупный план верха QULTURE City Layer",
+    altPants: "Деталь брюк QULTURE City Layer",
+  },
+  kz: {
+    heroTitle: "ӨЗГЕРМЕЛІ\nКЛИМАТҚА АРНАЛҒАН.",
+    heroSubtitle: "Желге, қабаттап киюге және қозғалысқа арналған қалалық киім.",
+    heroPrimary: "Жүйені көру",
+    heroSecondary: "QULTURE AI-ден сұрау",
+    systemMeta: "02 / Қалалық қабаттар жүйесі",
+    systemTitle: "ҚАЛАЛЫҚ\nҚАБАТТАР ЖҮЙЕСІ",
+    systemLine: "Бір жиынтық. Екі тәуелсіз өлшем.",
+    systemBody: "Жүйені толығымен жинаңыз немесе қажет қабатты ғана таңдаңыз.",
+    viewSystem: "Жүйені көру",
+    soon: "Әзірленуде",
+    set: "Жиынтық",
+    top: "Үсті",
+    pants: "Шалбар",
+    setAction: "City Layer жиынтығы",
+    topAction: "City Layer үсті",
+    pantsAction: "City Layer шалбары",
+    principles: ["Қабаттау логикасы", "Климат сценарийлері", "Материал құрылысы", "Қаладағы қозғалыс"],
+    scenariosMeta: "03 / Қалалық маршрут",
+    scenariosTitle: "КӨШЕДЕН\nҒИМАРАТҚА ДЕЙІН",
+    scenarios: ["Көше", "Автокөлік", "Көлік", "Ғимарат"],
+    layers: ["Жеке / негізгі / сыртқы", "Отыру / еркін", "Қозғалыс / қорғаныс", "Қабатты шешу / қалпына келу"],
+    proofMeta: "04 / Дәлелдер индексі",
+    proofTitle: "ДӘЛЕЛДЕР,\nУӘДЕЛЕР ЕМЕС",
+    proofBody: "Өлшемдер, материалдар мен сынақтар тек тексеруден кейін жарияланады.",
+    proofCta: "Жаңартуларды алу",
+    proofItems: [
+      ["Қабаттау логикасы", "Пішім жүйесін тексергеннен кейін жариялаймыз."],
+      ["Материал құрылысы", "Құжаттама дайындалуда."],
+      ["Пішім және қозғалыс", "Нақты қалалық маршруттарда сынақтан өтуде."],
+      ["Климат сценарийлері", "Далалық тексерістен кейін жарияланады."],
+      ["Күтім және ұзақтық", "Күтім нұсқаулығы дайындалуда."],
+    ],
+    proofStatus: "Сынақта",
+    aiMeta: "05 / QULTURE Assist",
+    aiTitle: "QULTURE-ДЕН СҰРАУ",
+    aiBody: "Өлшемді таңдауға, климатқа сай жүйені жинауға және заттарды расталған өнім контекстімен салыстыруға көмектесеміз.",
+    aiActions: ["Өлшемді табу", "Менің климатыма жинау", "Жиынтықты салыстыру", "Материалды түсіндіру", "Жеткізу және қайтару", "Кеңесшімен сөйлесу"],
+    openAI: "Кеңесшіні ашу",
+    aiPreviewTitle: "QULTURE AI / өнім контексті",
+    aiPreviewStatus: "Дайын",
+    aiPreviewQuestion: "Көлік пен студия арасында не киген дұрыс?",
+    aiPreviewAnswer: "City Layer жиынтығынан бастаңыз. Қалаңыз бен күнделікті маршрутыңызды айтсаңыз, ұсынымды нақтылаймын.",
+    aiPreviewPrompt: "Климат немесе пішім туралы сұраңыз…",
+    brandMeta: "06 / Астана, Қазақстан",
+    brandTitle: "АСТАНАДА ЖОБАЛАНҒАН.\nӨЗГЕРМЕЛІ КЛИМАТҚА АРНАЛҒАН.",
+    brandBody: "Жел, көлік, көше мен ғимаратқа арналған жүйе — Астанада байқалып, қозғалыста тексеріледі.",
+    journalMeta: "Журнал / прогресс",
+    journalTitle: "CITY LAYER\nЖҮЙЕСІН ЖАСАП ЖАТЫРМЫЗ",
+    journalBody: "Ойдан шығарылған күндерсіз. Тек расталған прогресті және жалғасып жатқан жұмысты жариялаймыз.",
+    journalCta: "Журналды ашу",
+    latestUpdates: "Соңғы жаңартулар",
+    progress: ["Пішім және қозғалыс", "Құрылымдық түйіндер", "Материалдар мен фурнитура", "Модель деректері"],
+    waitlistMeta: "07 / Іске қосылу жаңалықтары",
+    waitlistTitle: "КҮТУ ТІЗІМІНЕ ҚОСЫЛУ",
+    waitlistBody: "Таңдаған конфигурацияңыз қолжетімді болғанда хабарлаймыз.",
+    altSet: "QULTURE City Layer толық жиынтығы",
+    altTop: "QULTURE City Layer үстінің жақын көрінісі",
+    altPants: "QULTURE City Layer шалбарының деталі",
+  },
+} as const;
 
 export function HomePage({ locale, presentation = {} }: { locale: Locale; presentation?: HomePresentation }) {
   const base = copy[locale];
   const configuredText = Object.fromEntries(
     Object.entries(presentation.content ?? {}).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
   );
-  const text = { ...base, ...configuredText };
   const heroSubtitle = configuredText.heroSubtitle ?? configuredText.title ?? base.heroSubtitle;
   const journalBody = configuredText.journalBody ?? configuredText.note ?? base.journalBody;
   const visible = (section: string) => presentation.visibility?.[section] !== false;
@@ -87,116 +259,135 @@ export function HomePage({ locale, presentation = {} }: { locale: Locale; presen
       <section className="home-hero" aria-labelledby="home-hero-title">
         <HeroMedia poster={presentation.heroPoster} video={presentation.heroVideo} />
         <div className="home-hero__scrim" />
-        <div className="home-hero__content">
-          <h1 id="home-hero-title">DESIGNED FOR<br />CHANGING CLIMATES.</h1>
+        <div className="home-hero__content home-rail">
+          <p className="home-hero__index">01 / QULTURE</p>
+          <h1 id="home-hero-title">{base.heroTitle}</h1>
           <p>{heroSubtitle}</p>
           <div className="home-hero__actions">
-            <Link className="q-button" href={visible("cityLayerSystem") ? "#city-layer-system" : route(locale, "/waitlist")}>{text.heroPrimary}<ArrowIcon /></Link>
-            <OpenAIButton className="q-text-link" entryPoint="hero">{text.heroSecondary}</OpenAIButton>
+            <Link className="q-button" href={visible("cityLayerSystem") ? "#city-layer-system" : route(locale, "/waitlist")}>{base.heroPrimary}<ArrowIcon /></Link>
+            <OpenAIButton className="q-text-link" entryPoint="hero">{base.heroSecondary}<ArrowIcon /></OpenAIButton>
           </div>
         </div>
-        <a aria-label={text.heroPrimary} className="home-hero__scroll" href={visible("cityLayerSystem") ? "#city-layer-system" : route(locale, "/waitlist")}><span>01</span><ArrowIcon /></a>
+        <a aria-label={base.heroPrimary} className="home-hero__scroll" href={visible("cityLayerSystem") ? "#city-layer-system" : route(locale, "/waitlist")}><span>{base.heroPrimary}</span><ArrowIcon /></a>
       </section>
 
       {visible("cityLayerSystem") ? <section className="system-section" id="city-layer-system">
-        <div className="system-section__intro">
-          <p className="q-meta">02 / CITY LAYER SYSTEM</p>
-          <h2 className="q-display q-display--medium">CITY LAYER<br />SYSTEM</h2>
-          <p className="q-lead">{text.systemLine}</p>
-          <p>{text.systemBody}</p>
-          <Link className="q-button" href={route(locale, "/build-a-set")}>{text.viewSystem}<ArrowIcon /></Link>
-        </div>
-        <div className="system-section__products">
-          <Link className="product-study product-study--set" href={route(locale, "/build-a-set")}>
-            <span className="product-study__head"><strong>SET</strong><span>{text.soon}</span></span>
-            <span className="product-study__media"><Image fill alt="Editorial preview of the QULTURE city layer set" sizes="(max-width: 960px) 100vw, 34vw" src="/media/hero/hero-poster.png" /></span>
-            <span className="product-study__action">CITY LAYER SET <ArrowIcon /></span>
-          </Link>
-          <Link className="product-study product-study--top" href={route(locale, "/shop")}>
-            <span className="product-study__head"><strong>TOP</strong><span>{text.soon}</span></span>
-            <span className="product-study__media"><Image fill alt="Editorial preview of the QULTURE city layer top" sizes="(max-width: 960px) 50vw, 22vw" src="/media/hero/hero-poster.png" /></span>
-            <span className="product-study__action">CITY LAYER TOP <ArrowIcon /></span>
-          </Link>
-          <Link className="product-study product-study--pants" href={route(locale, "/shop")}>
-            <span className="product-study__head"><strong>PANTS</strong><span>{text.soon}</span></span>
-            <span className="product-study__media"><Image fill alt="Editorial preview of QULTURE city layer pants" sizes="(max-width: 960px) 50vw, 22vw" src="/media/hero/hero-poster.png" /></span>
-            <span className="product-study__action">CITY LAYER PANTS <ArrowIcon /></span>
-          </Link>
+        <div className="home-rail system-section__grid">
+          <div className="system-section__intro">
+            <p className="q-meta">{base.systemMeta}</p>
+            <h2 className="q-display q-display--medium">{base.systemTitle}</h2>
+            <p className="q-lead">{base.systemLine}</p>
+            <p className="system-section__body">{base.systemBody}</p>
+            <Link className="q-button" href={route(locale, "/build-a-set")}>{base.viewSystem}<ArrowIcon /></Link>
+          </div>
+          <div className="system-section__products">
+            <ProductStudy action={base.setAction} alt={base.altSet} href={route(locale, "/build-a-set")} label={base.set} position="set" soon={base.soon} />
+            <ProductStudy action={base.topAction} alt={base.altTop} href={route(locale, "/shop")} label={base.top} position="top" soon={base.soon} />
+            <ProductStudy action={base.pantsAction} alt={base.altPants} href={route(locale, "/shop")} label={base.pants} position="pants" soon={base.soon} />
+          </div>
         </div>
       </section> : null}
 
-      <div className="principles-strip" aria-label="QULTURE product principles">
-        {text.principles.map((principle, index) => <span key={principle}><small>0{index + 1}</small>{principle}</span>)}
-      </div>
+      <section className="principles-strip" aria-label={base.systemTitle}>
+        <div className="home-rail principles-strip__grid">
+          {base.principles.map((principle, index) => <span key={principle}><small>0{index + 1}</small>{principle}</span>)}
+        </div>
+      </section>
 
       {visible("scenarios") ? <section className="scenarios-section">
-        <div className="scenarios-section__heading">
-          <p className="q-meta">03 / CITY ROUTE</p>
-          <h2 className="q-heading">{text.scenariosTitle}</h2>
+        <div className="home-rail">
+          <div className="scenarios-section__heading">
+            <p className="q-meta">{base.scenariosMeta}</p>
+            <h2 className="q-heading">{base.scenariosTitle}</h2>
+          </div>
+          <div className="scenarios-section__grid">
+            <ScenarioFrame alt={base.scenarios[0]} label={base.scenarios[0]} layer={base.layers[0]} position="street" />
+            <ScenarioFrame alt={base.scenarios[1]} label={base.scenarios[1]} layer={base.layers[1]} position="car" />
+            <ScenarioFrame alt={base.scenarios[2]} label={base.scenarios[2]} layer={base.layers[2]} position="transit" />
+            <ScenarioFrame alt={base.scenarios[3]} label={base.scenarios[3]} layer={base.layers[3]} position="inside" />
+          </div>
         </div>
-        <div className="scenarios-section__labels">{text.scenarios.map((item) => <span key={item}>{item}</span>)}</div>
-        <div className="scenarios-section__media"><Image fill alt="Four QULTURE editorial wear scenarios: street, car, transport and interior" sizes="100vw" src="/media/editorial/city-scenarios.png" /></div>
-        <div className="scenarios-section__layers">{text.scenarios.map((item) => <span key={item}>{text.layers}</span>)}</div>
       </section> : null}
 
       {visible("proof") ? <section className="proof-section q-dark">
-        <div className="proof-section__intro">
-          <p className="q-meta q-accent">04 / PROOF</p>
-          <h2 className="q-display q-display--medium">PROOF,<br />NOT PROMISES</h2>
-          <p className="q-lead">{text.proofBody}</p>
-          <Link className="q-button" href={route(locale, "/waitlist")}>{text.proofCta}<ArrowIcon /></Link>
+        <div className="home-rail proof-section__grid">
+          <div className="proof-section__intro">
+            <p className="q-meta q-accent">{base.proofMeta}</p>
+            <h2 className="q-display q-display--medium">{base.proofTitle}</h2>
+            <p className="q-lead">{base.proofBody}</p>
+            <Link className="q-button" href={route(locale, "/waitlist")}>{base.proofCta}<ArrowIcon /></Link>
+          </div>
+          <ol className="proof-list">
+            {base.proofItems.map(([title, detail], index) => (
+              <li key={title}>
+                <details>
+                  <summary><span>0{index + 1}</span><strong>{title}</strong><small>{base.proofStatus}</small><ArrowIcon /></summary>
+                  <p>{detail}</p>
+                </details>
+              </li>
+            ))}
+          </ol>
         </div>
-        <ol className="proof-list">
-          {text.proofItems.map((item, index) => <li key={item}><span>0{index + 1}</span><strong>{item}</strong><small>{text.inProgress}</small></li>)}
-        </ol>
       </section> : null}
 
       {visible("ai") ? <section className="home-ai q-dark">
-        <div className="home-ai__actions">
-          <p className="q-meta q-accent">05 / QULTURE ASSIST</p>
-          <h2 className="q-display q-display--medium">ASK QULTURE</h2>
-          <p className="q-lead">{text.aiBody}</p>
-          <div className="home-ai__quick">
-            {text.aiActions.map((action) => <OpenAIButton key={action} className="home-ai__quick-action" entryPoint="home_ai" prompt={action}>{action}</OpenAIButton>)}
+        <div className="home-rail home-ai__grid">
+          <div className="home-ai__actions">
+            <p className="q-meta q-accent">{base.aiMeta}</p>
+            <h2 className="q-display q-display--medium">{base.aiTitle}</h2>
+            <p className="q-lead">{base.aiBody}</p>
+            <div className="home-ai__quick">
+              {base.aiActions.map((action, index) => <OpenAIButton key={action} className="home-ai__quick-action" entryPoint="home_ai" prompt={action}><span>0{index + 1}</span>{action}<ArrowIcon /></OpenAIButton>)}
+            </div>
+            <OpenAIButton className="q-button" entryPoint="home_ai">{base.openAI}<ArrowIcon /></OpenAIButton>
           </div>
-          <OpenAIButton entryPoint="home_ai">{text.openAI}</OpenAIButton>
-        </div>
-        <div className="home-ai__preview" aria-label="QULTURE AI conversation preview">
-          <div className="home-ai__preview-head"><span>AI-КОНСУЛЬТАНТ QULTURE</span><span>ONLINE</span></div>
-          <div className="home-ai__message"><small>QULTURE AI</small><p>{locale === "ru" ? "Сначала уточню город, сезон и способ передвижения. Подтверждённые данные покажу только из базы QULTURE." : "Алдымен қала, маусым және қозғалыс тәсілін нақтылаймын. Расталған деректерді тек QULTURE базасынан көрсетемін."}</p></div>
-          <div className="home-ai__preview-input"><span>{locale === "ru" ? "Задайте вопрос консультанту…" : "Кеңесшіге сұрақ қойыңыз…"}</span><span aria-hidden="true">↑</span></div>
+          <div className="home-ai__preview" aria-label={base.aiPreviewTitle}>
+            <div className="home-ai__preview-head"><span>{base.aiPreviewTitle}</span><span>{base.aiPreviewStatus}</span></div>
+            <div className="home-ai__conversation">
+              <p className="home-ai__message home-ai__message--user"><span>01</span>{base.aiPreviewQuestion}</p>
+              <p className="home-ai__message"><span>QULTURE AI</span>{base.aiPreviewAnswer}</p>
+            </div>
+            <div className="home-ai__preview-input"><span>{base.aiPreviewPrompt}</span><ArrowIcon /></div>
+          </div>
         </div>
       </section> : null}
 
       {visible("about") ? <section className="brand-origin">
-        <p className="q-meta">06 / ASTANA</p>
-        <h2 className="q-display q-display--medium">DESIGNED IN ASTANA.<br />BUILT FOR CHANGING CLIMATES.</h2>
-        <p className="q-lead">{text.brandBody}</p>
+        <div className="home-rail brand-origin__grid">
+          <p className="q-meta">{base.brandMeta}</p>
+          <h2 className="q-display q-display--medium">{base.brandTitle}</h2>
+          <p className="q-lead">{base.brandBody}</p>
+          <div className="brand-origin__detail"><span>51.1694° N</span><span>71.4491° E</span><span>ASTANA / 2026</span></div>
+        </div>
       </section> : null}
 
       {visible("journal") ? <section className="journal-home">
-        <div className="journal-home__feature">
-          <div className="journal-home__media"><Image fill alt="QULTURE progress journal editorial" sizes="(max-width: 960px) 100vw, 42vw" src="/media/hero/hero-poster.png" /></div>
-          <div className="journal-home__copy">
-            <p className="q-meta">JOURNAL / PROGRESS</p>
-            <h2 className="q-heading">BUILDING THE<br />CITY LAYER SYSTEM</h2>
-            <p>{journalBody}</p>
-            <Link className="q-button" href={route(locale, "/journal")}>{text.readJournal}<ArrowIcon /></Link>
+        <div className="home-rail journal-home__grid">
+          <div className="journal-home__feature">
+            <div className="journal-home__media"><Image fill alt={base.journalTitle} sizes="(max-width: 960px) 100vw, 44vw" src="/media/hero/hero-poster.png" /></div>
+            <div className="journal-home__copy">
+              <p className="q-meta">{base.journalMeta}</p>
+              <h2 className="q-heading">{base.journalTitle}</h2>
+              <p>{journalBody}</p>
+              <Link className="q-button" href={route(locale, "/journal")}>{base.journalCta}<ArrowIcon /></Link>
+            </div>
           </div>
-        </div>
-        <div className="journal-home__rail">
-          <p className="q-meta">{locale === "ru" ? "Последние обновления" : "Соңғы жаңартулар"}</p>
-          {text.progress.map((item) => <Link key={item} href={route(locale, "/journal/building-qulture-openly")}><span>{item}</span><ArrowIcon /></Link>)}
+          <div className="journal-home__rail">
+            <p className="q-meta">{base.latestUpdates}</p>
+            {base.progress.map((item, index) => <Link key={item} href={route(locale, "/journal/building-qulture-openly")}><small>0{index + 1}</small><span>{item}</span><ArrowIcon /></Link>)}
+          </div>
         </div>
       </section> : null}
 
       {visible("waitlist") ? <section className="home-waitlist q-dark" id="waitlist">
-        <div className="home-waitlist__intro">
-          <p className="q-meta q-accent">07 / WAITLIST</p>
-          <h2 className="q-heading">JOIN THE WAITLIST</h2>
-          <p>{text.waitlistBody}</p>
+        <div className="home-rail home-waitlist__grid">
+          <div className="home-waitlist__intro">
+            <p className="q-meta q-accent">{base.waitlistMeta}</p>
+            <h2 className="q-heading">{base.waitlistTitle}</h2>
+            <p>{base.waitlistBody}</p>
+          </div>
+          <WaitlistForm captureEnabled={presentation.captureEnabled} locale={locale} policyVersion={presentation.policyVersion} source="home" />
         </div>
-        <WaitlistForm captureEnabled={presentation.captureEnabled} locale={locale} policyVersion={presentation.policyVersion} source="home" />
       </section> : null}
     </>
   );

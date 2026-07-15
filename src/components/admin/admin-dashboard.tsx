@@ -39,7 +39,7 @@ const productStatuses = ["DRAFT", "PREVIEW", "COMING_SOON", "ACTIVE", "ARCHIVED"
 const publishStatuses = ["DRAFT", "PUBLISHED", "ARCHIVED"];
 const knowledgeStatuses = ["DRAFT", "APPROVED", "PUBLISHED", "ARCHIVED"];
 const ruleStatuses = ["DRAFT", "APPROVED", "ARCHIVED"];
-const locales = ["RU", "KZ", "EN"];
+const locales = ["EN", "RU", "KZ"];
 const handoffStatuses = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 
 function text(form: FormData, name: string) {
@@ -102,6 +102,13 @@ function json(value: unknown, fallback: unknown = {}) {
 
 function shortId(value: string) {
   return value.length > 14 ? `${value.slice(0, 7)}…${value.slice(-5)}` : value;
+}
+
+function englishProductName(
+  product: { nameEn?: string | null; nameRu?: string | null } | null | undefined,
+  fallback = "Untitled product",
+) {
+  return product?.nameEn?.trim() || product?.nameRu?.trim() || fallback;
 }
 
 function Field({
@@ -315,10 +322,10 @@ function SettingsPanel({
             required
           />
           <SelectField
-            defaultValue={settings?.defaultLocale ?? "RU"}
+            defaultValue={settings?.defaultLocale ?? "EN"}
             label="Default public locale"
             name="defaultLocale"
-            options={["RU", "KZ"]}
+            options={locales}
             required
           />
           <Field
@@ -385,8 +392,10 @@ function ProductForm({ product, submit, busy }: { product?: ProductRecord; submi
             slug: text(form, "slug"),
             nameRu: text(form, "nameRu"),
             nameKz: text(form, "nameKz"),
+            nameEn: optionalText(form, "nameEn"),
             descriptionRu: text(form, "descriptionRu"),
             descriptionKz: text(form, "descriptionKz"),
+            descriptionEn: optionalText(form, "descriptionEn"),
             category: text(form, "category"),
             status: text(form, "status"),
             priceMinor: nullableInteger(form, "priceMinor"),
@@ -398,6 +407,7 @@ function ProductForm({ product, submit, busy }: { product?: ProductRecord; submi
             technologyTags: text(form, "technologyTags"),
             careRu: optionalText(form, "careRu"),
             careKz: optionalText(form, "careKz"),
+            careEn: optionalText(form, "careEn"),
           }),
           !product,
         )
@@ -411,6 +421,7 @@ function ProductForm({ product, submit, busy }: { product?: ProductRecord; submi
         <Field defaultValue={product?.priceMinor} label="Price, minor KZT" min={0} name="priceMinor" type="number" />
         <Field defaultValue={product?.comparePriceMinor} label="Compare price, minor KZT" min={0} name="comparePriceMinor" type="number" />
         <Field defaultValue={inputDate(product?.preorderEta)} label="Preorder ETA" name="preorderEta" type="datetime-local" />
+        <Field defaultValue={product?.nameEn} label="Name / EN" name="nameEn" />
         <Field defaultValue={product?.nameRu} label="Name / RU" name="nameRu" required />
         <Field defaultValue={product?.nameKz} label="Name / KZ" name="nameKz" required />
       </div>
@@ -419,8 +430,10 @@ function ProductForm({ product, submit, busy }: { product?: ProductRecord; submi
         <Checkbox defaultChecked={product?.isDemo ?? false} label="Demo-only record" name="isDemo" />
       </div>
       <div className="admin-form-grid admin-form-grid--copy">
+        <TextArea defaultValue={product?.descriptionEn} label="Description / EN" name="descriptionEn" rows={6} />
         <TextArea defaultValue={product?.descriptionRu} label="Description / RU" name="descriptionRu" required rows={6} />
         <TextArea defaultValue={product?.descriptionKz} label="Description / KZ" name="descriptionKz" required rows={6} />
+        <TextArea defaultValue={product?.careEn} label="Care / EN" name="careEn" rows={4} />
         <TextArea defaultValue={product?.careRu} label="Care / RU" name="careRu" rows={4} />
         <TextArea defaultValue={product?.careKz} label="Care / KZ" name="careKz" rows={4} />
         <TextArea code defaultValue={json(product?.media, [])} label="Media / JSON" name="media" required rows={6} />
@@ -456,6 +469,7 @@ function VariantForm({
             colorCode: text(form, "colorCode"),
             colorNameRu: text(form, "colorNameRu"),
             colorNameKz: text(form, "colorNameKz"),
+            colorNameEn: optionalText(form, "colorNameEn"),
             sizeLabel: text(form, "sizeLabel"),
             sku: text(form, "sku"),
             stock: integer(form, "stock"),
@@ -476,6 +490,7 @@ function VariantForm({
       <div className="admin-form-grid admin-form-grid--dense">
         <Field defaultValue={variant?.sku} label="SKU" name="sku" required />
         <Field defaultValue={variant?.colorCode} label="Color code" name="colorCode" required />
+        <Field defaultValue={variant?.colorNameEn} label="Color / EN" name="colorNameEn" />
         <Field defaultValue={variant?.colorNameRu} label="Color / RU" name="colorNameRu" required />
         <Field defaultValue={variant?.colorNameKz} label="Color / KZ" name="colorNameKz" required />
         <Field defaultValue={variant?.sizeLabel} label="Size" name="sizeLabel" required />
@@ -517,8 +532,10 @@ function CollectionForm({
             slug: text(form, "slug"),
             nameRu: text(form, "nameRu"),
             nameKz: text(form, "nameKz"),
+            nameEn: optionalText(form, "nameEn"),
             descriptionRu: optionalText(form, "descriptionRu"),
             descriptionKz: optionalText(form, "descriptionKz"),
+            descriptionEn: optionalText(form, "descriptionEn"),
             status: text(form, "status"),
             isDemo: checked(form, "isDemo"),
             sortOrder: integer(form, "sortOrder"),
@@ -530,6 +547,7 @@ function CollectionForm({
       {collection ? <input name="id" type="hidden" value={collection.id} /> : null}
       <div className="admin-form-grid">
         <Field defaultValue={collection?.slug} label="Slug" name="slug" required />
+        <Field defaultValue={collection?.nameEn} label="Name / EN" name="nameEn" />
         <Field defaultValue={collection?.nameRu} label="Name / RU" name="nameRu" required />
         <Field defaultValue={collection?.nameKz} label="Name / KZ" name="nameKz" required />
         <SelectField defaultValue={collection?.status ?? "DRAFT"} label="Lifecycle" name="status" options={publishStatuses} required />
@@ -537,6 +555,7 @@ function CollectionForm({
       </div>
       <Checkbox defaultChecked={collection?.isDemo ?? false} label="Demo-only collection" name="isDemo" />
       <div className="admin-form-grid admin-form-grid--copy">
+        <TextArea defaultValue={collection?.descriptionEn} label="Description / EN" name="descriptionEn" rows={4} />
         <TextArea defaultValue={collection?.descriptionRu} label="Description / RU" name="descriptionRu" rows={4} />
         <TextArea defaultValue={collection?.descriptionKz} label="Description / KZ" name="descriptionKz" rows={4} />
       </div>
@@ -558,7 +577,7 @@ function BundleForm({
 }) {
   const productOptions = [
     { value: "", label: "Not selected" },
-    ...products.map((product) => ({ value: product.id, label: `${product.nameRu} / ${product.slug}` })),
+    ...products.map((product) => ({ value: product.id, label: `${englishProductName(product)} / ${product.slug}` })),
   ];
   const top = bundle?.components.find((component) => component.role === "TOP")?.productId;
   const bottom = bundle?.components.find((component) => component.role === "BOTTOM")?.productId;
@@ -576,8 +595,10 @@ function BundleForm({
             slug: text(form, "slug"),
             nameRu: text(form, "nameRu"),
             nameKz: text(form, "nameKz"),
+            nameEn: optionalText(form, "nameEn"),
             descriptionRu: optionalText(form, "descriptionRu"),
             descriptionKz: optionalText(form, "descriptionKz"),
+            descriptionEn: optionalText(form, "descriptionEn"),
             status: text(form, "status"),
             discountType: text(form, "discountType"),
             discountValue: integer(form, "discountValue"),
@@ -593,6 +614,7 @@ function BundleForm({
       {bundle ? <input name="id" type="hidden" value={bundle.id} /> : null}
       <div className="admin-form-grid">
         <Field defaultValue={bundle?.slug} label="Slug" name="slug" required />
+        <Field defaultValue={bundle?.nameEn} label="Name / EN" name="nameEn" />
         <Field defaultValue={bundle?.nameRu} label="Name / RU" name="nameRu" required />
         <Field defaultValue={bundle?.nameKz} label="Name / KZ" name="nameKz" required />
         <SelectField defaultValue={bundle?.status ?? "DRAFT"} label="Lifecycle" name="status" options={productStatuses} required />
@@ -603,6 +625,7 @@ function BundleForm({
       </div>
       <Checkbox defaultChecked={bundle?.isDemo ?? false} label="Demo-only bundle" name="isDemo" />
       <div className="admin-form-grid admin-form-grid--copy">
+        <TextArea defaultValue={bundle?.descriptionEn} label="Description / EN" name="descriptionEn" rows={4} />
         <TextArea defaultValue={bundle?.descriptionRu} label="Description / RU" name="descriptionRu" rows={4} />
         <TextArea defaultValue={bundle?.descriptionKz} label="Description / KZ" name="descriptionKz" rows={4} />
         <TextArea code defaultValue={json(bundle?.media, [])} label="Media / JSON" name="media" required rows={5} />
@@ -626,7 +649,7 @@ function CatalogPanel({ data, submit, busy }: { data: AdminDashboardData; submit
           <ProductForm busy={busy} submit={submit} />
         </Editor>
         {data.products.map((product) => (
-          <Editor key={product.id} meta={`${product.status} · ${product.variants.length} variants`} title={product.nameRu}>
+          <Editor key={product.id} meta={`${product.status} · ${product.variants.length} variants`} title={englishProductName(product)}>
             <ProductForm busy={busy} product={product} submit={submit} />
             <div className="admin-nested">
               <h4>Variants</h4>
@@ -648,7 +671,7 @@ function CatalogPanel({ data, submit, busy }: { data: AdminDashboardData; submit
           <CollectionForm busy={busy} submit={submit} />
         </Editor>
         {data.collections.map((collection) => (
-          <Editor key={collection.id} meta={`${collection.status} · ${collection._count.products} products`} title={collection.nameRu}>
+          <Editor key={collection.id} meta={`${collection.status} · ${collection._count.products} products`} title={collection.nameEn || collection.nameRu}>
             <CollectionForm busy={busy} collection={collection} submit={submit} />
           </Editor>
         ))}
@@ -659,7 +682,7 @@ function CatalogPanel({ data, submit, busy }: { data: AdminDashboardData; submit
           <BundleForm busy={busy} products={data.products} submit={submit} />
         </Editor>
         {data.bundles.map((bundle) => (
-          <Editor key={bundle.id} meta={`${bundle.status} · ${bundle.components.length} components`} title={bundle.nameRu}>
+          <Editor key={bundle.id} meta={`${bundle.status} · ${bundle.components.length} components`} title={bundle.nameEn || bundle.nameRu}>
             <BundleForm bundle={bundle} busy={busy} products={data.products} submit={submit} />
           </Editor>
         ))}
@@ -824,7 +847,7 @@ function KnowledgeForm({
     >
       {item ? <input name="id" type="hidden" value={item.id} /> : null}
       <div className="admin-form-grid">
-        <SelectField defaultValue={item?.language ?? "RU"} label="Language" name="language" options={locales} required />
+        <SelectField defaultValue={item?.language ?? "EN"} label="Language" name="language" options={locales} required />
         <Field defaultValue={item?.scope} label="Knowledge scope" name="scope" required />
         <Field defaultValue={item?.title} label="Title" name="title" required />
         <Field defaultValue={item?.sourceOwner} label="Source owner" name="sourceOwner" required />
@@ -882,10 +905,13 @@ function JournalForm({
             slug: text(form, "slug"),
             titleRu: text(form, "titleRu"),
             titleKz: text(form, "titleKz"),
+            titleEn: optionalText(form, "titleEn"),
             excerptRu: text(form, "excerptRu"),
             excerptKz: text(form, "excerptKz"),
+            excerptEn: optionalText(form, "excerptEn"),
             contentRu: text(form, "contentRu"),
             contentKz: text(form, "contentKz"),
+            contentEn: optionalText(form, "contentEn"),
             coverImage: optionalText(form, "coverImage"),
             author: optionalText(form, "author"),
             status: text(form, "status"),
@@ -901,13 +927,16 @@ function JournalForm({
         <Field defaultValue={article?.author} label="Author" name="author" />
         <Field defaultValue={article?.coverImage} label="Cover image path" name="coverImage" />
         <SelectField defaultValue={article?.status ?? "DRAFT"} label="Lifecycle" name="status" options={publishStatuses} required />
+        <Field defaultValue={article?.titleEn} label="Title / EN" name="titleEn" />
         <Field defaultValue={article?.titleRu} label="Title / RU" name="titleRu" required />
         <Field defaultValue={article?.titleKz} label="Title / KZ" name="titleKz" required />
       </div>
       <Checkbox defaultChecked={article?.isDemo ?? false} label="Demo-only article" name="isDemo" />
       <div className="admin-form-grid admin-form-grid--copy">
+        <TextArea defaultValue={article?.excerptEn} label="Excerpt / EN" name="excerptEn" rows={4} />
         <TextArea defaultValue={article?.excerptRu} label="Excerpt / RU" name="excerptRu" required rows={4} />
         <TextArea defaultValue={article?.excerptKz} label="Excerpt / KZ" name="excerptKz" required rows={4} />
+        <TextArea defaultValue={article?.contentEn} label="Content / EN" name="contentEn" rows={12} />
         <TextArea defaultValue={article?.contentRu} label="Content / RU" name="contentRu" required rows={12} />
         <TextArea defaultValue={article?.contentKz} label="Content / KZ" name="contentKz" required rows={12} />
       </div>
@@ -947,7 +976,7 @@ function TranslationForm({
       <div className="admin-form-grid">
         <Field defaultValue={translation?.namespace} label="Namespace" name="namespace" readOnly={Boolean(translation)} required />
         <Field defaultValue={translation?.key} label="Key" name="key" readOnly={Boolean(translation)} required />
-        <SelectField defaultValue={translation?.locale ?? "RU"} label="Locale" name="locale" options={locales} required />
+        <SelectField defaultValue={translation?.locale ?? "EN"} label="Locale" name="locale" options={locales} required />
         <SelectField defaultValue={translation?.status ?? "DRAFT"} label="Lifecycle" name="status" options={publishStatuses} required />
       </div>
       <TextArea defaultValue={translation?.value} label="Value" name="value" required rows={4} />
@@ -994,7 +1023,7 @@ function ContentPageForm({
     >
       <div className="admin-form-grid">
         <Field defaultValue={page?.slug} label="Slug" name="slug" readOnly={Boolean(page)} required />
-        <SelectField defaultValue={page?.locale ?? "RU"} label="Locale" name="locale" options={locales} required />
+        <SelectField defaultValue={page?.locale ?? "EN"} label="Locale" name="locale" options={locales} required />
         <Field defaultValue={page?.title} label="Title" name="title" required />
         <SelectField defaultValue={page?.status ?? "DRAFT"} label="Lifecycle" name="status" options={publishStatuses} required />
       </div>
@@ -1028,7 +1057,7 @@ function ContentPanel({ data, submit, busy }: { data: AdminDashboardData; submit
           <JournalForm busy={busy} submit={submit} />
         </Editor>
         {data.journal.map((article) => (
-          <Editor key={article.id} meta={`${article.status} · ${article.slug}`} title={article.titleRu}>
+          <Editor key={article.id} meta={`${article.status} · ${article.slug}`} title={article.titleEn || article.titleRu}>
             <JournalForm article={article} busy={busy} submit={submit} />
           </Editor>
         ))}
@@ -1063,10 +1092,10 @@ function WaitlistTable({ waitlist }: { waitlist: AdminDashboardData["waitlist"] 
   const [filters, setFilters] = useState({ product: "", color: "", size: "", city: "" });
   const deferredFilters = useDeferredValue(filters);
   const normalized = Object.fromEntries(
-    Object.entries(deferredFilters).map(([key, value]) => [key, value.trim().toLocaleLowerCase("ru")]),
+    Object.entries(deferredFilters).map(([key, value]) => [key, value.trim().toLocaleLowerCase("en")]),
   );
   const filtered = waitlist.filter((lead) => {
-    const product = `${lead.product?.slug ?? ""} ${lead.product?.nameRu ?? ""}`.toLocaleLowerCase("ru");
+    const product = `${lead.product?.slug ?? ""} ${englishProductName(lead.product, "")}`.toLocaleLowerCase("en");
     return (
       product.includes(normalized.product) &&
       (lead.color ?? "").toLocaleLowerCase("ru").includes(normalized.color) &&
@@ -1111,7 +1140,7 @@ function WaitlistTable({ waitlist }: { waitlist: AdminDashboardData["waitlist"] 
                 <td>{formatDate(lead.createdAt)}</td>
                 <td><strong>{lead.name}</strong><small>{lead.email || lead.phone || "No channel"}</small><small>{lead.city || "—"}</small></td>
                 <td>{lead.contactPurpose}<small>{lead.source} · {lead.language}</small></td>
-                <td>{lead.product?.nameRu || "General"}<small>{lead.product?.slug || lead.variant?.sku || "—"}</small></td>
+                <td>{englishProductName(lead.product, "General")}<small>{lead.product?.slug || lead.variant?.sku || "—"}</small></td>
                 <td>{lead.color || "—"} / {lead.size || "—"}</td>
                 <td>S:{lead.serviceConsent ? "yes" : "no"} R:{lead.restockConsent ? "yes" : "no"} M:{lead.marketingConsent ? "yes" : "no"}<small>policy {lead.policyVersion}</small><small>{lead.submissionCount} submissions</small></td>
               </tr>
@@ -1146,7 +1175,7 @@ function HandoffTable({
               <tr key={ticket.id}>
                 <td>{formatDate(ticket.createdAt)}<small>{shortId(ticket.id)}</small></td>
                 <td><strong>{ticket.userQuestion}</strong><small>{ticket.reason}</small>{ticket.summary ? <small>{ticket.summary}</small> : null}</td>
-                <td>{ticket.product?.nameRu || "General"}<small>confidence: {ticket.aiConfidence || "—"}</small></td>
+                <td>{englishProductName(ticket.product, "General")}<small>confidence: {ticket.aiConfidence || "—"}</small></td>
                 <td>{ticket.contactName || "—"}<small>{ticket.contactEmail || ticket.contactPhone || "No channel"}</small><small>consent {ticket.contactConsent ? "yes" : "no"} · policy {ticket.policyVersion}</small></td>
                 <td>
                   <form
@@ -1200,7 +1229,7 @@ function OperationsPanel({ data, submit, busy }: { data: AdminDashboardData; sub
                 <td><strong>{order.number}</strong><small>{order._count.items} items</small></td>
                 <td>{order.customerName}<small>{order.customerEmail || order.customerPhone || "—"}</small></td>
                 <td>{order.city}<small>{order.deliveryMethod}</small></td>
-                <td>{(order.totalMinor / 100).toLocaleString("ru-RU")} {order.currency}</td>
+                <td>{(order.totalMinor / 100).toLocaleString("en-KZ")} {order.currency}</td>
                 <td>{order.status}<small>{order.paymentStatus} · {order.fiscalStatus}</small></td>
               </tr>
             ))}</tbody>
@@ -1283,7 +1312,7 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
     <main className="admin-shell">
       <header className="admin-topbar">
         <div>
-          <Link aria-label="QULTURE public site" className="q-wordmark" href="/ru">QULTURE</Link>
+          <Link aria-label="QULTURE public site" className="q-wordmark" href="/en">QULTURE</Link>
           <span>Control room</span>
         </div>
         <div className="admin-topbar__actions">

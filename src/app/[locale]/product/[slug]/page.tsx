@@ -26,6 +26,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     if (product) {
       const origin = configuredSiteOrigin();
       const canonical = absoluteSiteUrl(origin, `/${locale}/product/${slug}`);
+      const englishCanonical = absoluteSiteUrl(origin, `/en/product/${slug}`);
       const russianCanonical = absoluteSiteUrl(origin, `/ru/product/${slug}`);
       const kazakhCanonical = absoluteSiteUrl(origin, `/kz/product/${slug}`);
       const images = product.media.flatMap((item) => {
@@ -35,11 +36,16 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       return {
         title: product.name,
         description: product.description,
-        ...(canonical && russianCanonical && kazakhCanonical
+        ...(canonical && englishCanonical && russianCanonical && kazakhCanonical
           ? {
               alternates: {
                 canonical,
-                languages: { ru: russianCanonical, kk: kazakhCanonical },
+                languages: {
+                  en: englishCanonical,
+                  ru: russianCanonical,
+                  kk: kazakhCanonical,
+                  "x-default": englishCanonical,
+                },
               },
             }
           : {}),

@@ -9,6 +9,12 @@ import type {
   RelatedLink,
 } from "@/content/types";
 
+const relatedLinksLabels: Record<Locale, string> = {
+  en: "Related pages",
+  ru: "Связанные разделы",
+  kz: "Қатысты бөлімдер",
+};
+
 type PageFrameProps = {
   eyebrow: string;
   title: string;
@@ -87,7 +93,7 @@ export function RelatedLinks({
   locale: Locale;
   links: readonly RelatedLink[];
 }) {
-  const label = locale === "ru" ? "Связанные разделы" : "Қатысты бөлімдер";
+  const label = relatedLinksLabels[locale];
 
   return (
     <nav aria-label={label} className="q-rule">

@@ -49,6 +49,17 @@ describe("AI tool execution", () => {
     });
   });
 
+  it("returns English validation copy for an English conversation", async () => {
+    const result = await executeAITool(
+      "get_product",
+      "{broken",
+      { ...context, locale: "en" },
+      { adapter: adapter() },
+    );
+
+    expect(result.error?.message).toBe("The tool parameters did not pass validation.");
+  });
+
   it("does not recommend an exact size when approved rules are absent", async () => {
     const data = adapter({ getApprovedSizeRules: vi.fn(async () => null) });
     const result = await executeAITool(

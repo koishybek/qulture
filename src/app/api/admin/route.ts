@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 const slug = z.string().trim().min(2).max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 const optionalText = z.string().trim().max(10_000).optional().nullable();
+const optionalLongText = z.string().trim().max(50_000).optional().nullable();
 const jsonValue = z.unknown().transform((value, context) => {
   try {
     return (typeof value === "string" ? JSON.parse(value) : value) as Prisma.InputJsonValue;
@@ -28,7 +29,7 @@ const actionSchema = z.discriminatedUnion("action", [
     demoMode: z.boolean(),
     catalogVisible: z.boolean(),
     controlledPreview: z.boolean(),
-    defaultLocale: z.enum(["RU", "KZ"]),
+    defaultLocale: z.enum(["EN", "RU", "KZ"]),
     aiTeaserEnabled: z.boolean(),
     aiTeaserDelayMs: z.number().int().min(0).max(60_000),
     aiTeaserFrequency: z.string().trim().min(1).max(80),
@@ -47,8 +48,10 @@ const actionSchema = z.discriminatedUnion("action", [
     slug,
     nameRu: z.string().trim().min(2).max(180),
     nameKz: z.string().trim().min(2).max(180),
+    nameEn: optionalText,
     descriptionRu: z.string().trim().min(2).max(10_000),
     descriptionKz: z.string().trim().min(2).max(10_000),
+    descriptionEn: optionalText,
     category: z.string().trim().min(2).max(80),
     status: z.enum(["DRAFT", "PREVIEW", "COMING_SOON", "ACTIVE", "ARCHIVED"]),
     priceMinor: z.number().int().nonnegative().nullable(),
@@ -60,6 +63,7 @@ const actionSchema = z.discriminatedUnion("action", [
     technologyTags: jsonValue,
     careRu: optionalText,
     careKz: optionalText,
+    careEn: optionalText,
   }),
   z.object({
     action: z.literal("variant.save"),
@@ -68,6 +72,7 @@ const actionSchema = z.discriminatedUnion("action", [
     colorCode: z.string().trim().min(1).max(80),
     colorNameRu: z.string().trim().min(1).max(120),
     colorNameKz: z.string().trim().min(1).max(120),
+    colorNameEn: optionalText,
     sizeLabel: z.string().trim().min(1).max(40),
     sku: z.string().trim().min(2).max(100),
     stock: z.number().int().nonnegative(),
@@ -81,14 +86,14 @@ const actionSchema = z.discriminatedUnion("action", [
   }),
   z.object({
     action: z.literal("collection.save"), id: z.string().optional(), slug,
-    nameRu: z.string().trim().min(2).max(180), nameKz: z.string().trim().min(2).max(180),
-    descriptionRu: optionalText, descriptionKz: optionalText,
+    nameRu: z.string().trim().min(2).max(180), nameKz: z.string().trim().min(2).max(180), nameEn: optionalText,
+    descriptionRu: optionalText, descriptionKz: optionalText, descriptionEn: optionalText,
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]), isDemo: z.boolean(), sortOrder: z.number().int(),
   }),
   z.object({
     action: z.literal("bundle.save"), id: z.string().optional(), slug,
-    nameRu: z.string().trim().min(2).max(180), nameKz: z.string().trim().min(2).max(180),
-    descriptionRu: optionalText, descriptionKz: optionalText,
+    nameRu: z.string().trim().min(2).max(180), nameKz: z.string().trim().min(2).max(180), nameEn: optionalText,
+    descriptionRu: optionalText, descriptionKz: optionalText, descriptionEn: optionalText,
     status: z.enum(["DRAFT", "PREVIEW", "COMING_SOON", "ACTIVE", "ARCHIVED"]),
     discountType: z.enum(["PERCENTAGE", "FIXED"]), discountValue: z.number().int().nonnegative(),
     isDemo: z.boolean(), topProductId: z.string().optional(), bottomProductId: z.string().optional(), media: jsonValue,
@@ -112,9 +117,9 @@ const actionSchema = z.discriminatedUnion("action", [
   }),
   z.object({
     action: z.literal("journal.save"), id: z.string().optional(), slug,
-    titleRu: z.string().trim().min(2).max(240), titleKz: z.string().trim().min(2).max(240),
-    excerptRu: z.string().trim().min(2).max(1000), excerptKz: z.string().trim().min(2).max(1000),
-    contentRu: z.string().trim().min(2).max(50_000), contentKz: z.string().trim().min(2).max(50_000),
+    titleRu: z.string().trim().min(2).max(240), titleKz: z.string().trim().min(2).max(240), titleEn: optionalText,
+    excerptRu: z.string().trim().min(2).max(1000), excerptKz: z.string().trim().min(2).max(1000), excerptEn: optionalText,
+    contentRu: z.string().trim().min(2).max(50_000), contentKz: z.string().trim().min(2).max(50_000), contentEn: optionalLongText,
     coverImage: optionalText, author: optionalText,
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]), isDemo: z.boolean(),
   }),

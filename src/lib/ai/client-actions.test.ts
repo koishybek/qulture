@@ -12,6 +12,12 @@ describe("AI client action resolver", () => {
     ).toEqual({ type: "navigate", href: "/ru/product/city-shell" });
     expect(
       resolveAIAction(
+        { kind: "open_product", label: "Open", value: '{"slug":"city-shell"}' },
+        "en",
+      ),
+    ).toEqual({ type: "navigate", href: "/en/product/city-shell" });
+    expect(
+      resolveAIAction(
         { kind: "open_product", label: "Открыть", value: "https://evil.example/x" },
         "ru",
       ),

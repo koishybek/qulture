@@ -4,8 +4,51 @@ import type { JournalArticle } from "@/content/types";
 import { localizePath, type Locale } from "@/lib/i18n";
 import { ContentSections, PageFrame } from "./content-page";
 
+const journalLocales: Record<Locale, string> = {
+  en: "en-GB",
+  ru: "ru-KZ",
+  kz: "kk-KZ",
+};
+
+const journalCopy: Record<
+  Locale,
+  {
+    listLabel: string;
+    minutes: string;
+    read: string;
+    readArticle: string;
+    empty: string;
+    backToJournal: string;
+  }
+> = {
+  en: {
+    listLabel: "Published articles",
+    minutes: "min read",
+    read: "Read",
+    readArticle: "Read article",
+    empty: "There are no published articles yet. We do not show empty or demonstration stories.",
+    backToJournal: "Back to journal",
+  },
+  ru: {
+    listLabel: "Опубликованные материалы",
+    minutes: "мин чтения",
+    read: "Читать",
+    readArticle: "Читать заметку",
+    empty: "Опубликованных материалов пока нет. Мы не показываем пустые или демонстрационные статьи.",
+    backToJournal: "Вернуться в журнал",
+  },
+  kz: {
+    listLabel: "Жарияланған материалдар",
+    minutes: "мин оқу",
+    read: "Оқу",
+    readArticle: "Жазбаны оқу",
+    empty: "Әзірге жарияланған материал жоқ. Біз бос немесе демонстрациялық мақалаларды көрсетпейміз.",
+    backToJournal: "Журналға оралу",
+  },
+};
+
 function formatDate(locale: Locale, value: string): string {
-  return new Intl.DateTimeFormat(locale === "ru" ? "ru-KZ" : "kk-KZ", {
+  return new Intl.DateTimeFormat(journalLocales[locale], {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -27,14 +70,14 @@ export function JournalIndexView({
   };
   articles: readonly JournalArticle[];
 }) {
-  const listLabel = locale === "ru" ? "Опубликованные материалы" : "Жарияланған материалдар";
+  const copy = journalCopy[locale];
 
   return (
     <PageFrame eyebrow={page.eyebrow} lead={page.lead} status={page.status} title={page.title}>
       <div className="q-page-body">
         <div className="q-prose">
           <section aria-labelledby="journal-list-title">
-            <h2 id="journal-list-title">{listLabel}</h2>
+            <h2 id="journal-list-title">{copy.listLabel}</h2>
             {articles.length > 0 ? (
               <ol>
                 {articles.map((article) => (
@@ -43,16 +86,16 @@ export function JournalIndexView({
                       <p className="q-meta">
                         <time dateTime={article.publishedAt}>{formatDate(locale, article.publishedAt)}</time>
                         {" · "}
-                        {article.readingMinutes} {locale === "ru" ? "мин чтения" : "мин оқу"}
+                        {article.readingMinutes} {copy.minutes}
                       </p>
                       <h3 id={`${article.slug}-title`}>{article.title}</h3>
                       <p>{article.excerpt}</p>
                       <Link
-                        aria-label={`${locale === "ru" ? "Читать" : "Оқу"}: ${article.title}`}
+                        aria-label={`${copy.read}: ${article.title}`}
                         className="q-text-link"
                         href={localizePath(locale, `/journal/${article.slug}`)}
                       >
-                        {locale === "ru" ? "Читать заметку" : "Жазбаны оқу"}
+                        {copy.readArticle}
                       </Link>
                     </article>
                   </li>
@@ -60,9 +103,7 @@ export function JournalIndexView({
               </ol>
             ) : (
               <p>
-                {locale === "ru"
-                  ? "Опубликованных материалов пока нет. Мы не показываем пустые или демонстрационные статьи."
-                  : "Әзірге жарияланған материал жоқ. Біз бос немесе демонстрациялық мақалаларды көрсетпейміз."}
+                {copy.empty}
               </p>
             )}
           </section>
@@ -79,21 +120,21 @@ export function JournalArticleView({
   locale: Locale;
   article: JournalArticle;
 }) {
+  const copy = journalCopy[locale];
+
   return (
     <PageFrame
       eyebrow={article.eyebrow}
       lead={article.excerpt}
-      status={`${formatDate(locale, article.publishedAt)} · ${article.readingMinutes} ${
-        locale === "ru" ? "мин чтения" : "мин оқу"
-      }`}
+      status={`${formatDate(locale, article.publishedAt)} · ${article.readingMinutes} ${copy.minutes}`}
       title={article.title}
     >
       <div className="q-page-body">
         <div className="q-prose">
           <ContentSections sections={article.sections} />
-          <nav aria-label={locale === "ru" ? "Назад в журнал" : "Журналға оралу"} className="q-rule">
+          <nav aria-label={copy.backToJournal} className="q-rule">
             <Link className="q-text-link" href={localizePath(locale, "/journal")}>
-              {locale === "ru" ? "Вернуться в журнал" : "Журналға оралу"}
+              {copy.backToJournal}
             </Link>
           </nav>
         </div>
@@ -116,7 +157,7 @@ export function ArticleStructuredData({
     description: article.excerpt,
     datePublished: article.publishedAt,
     dateModified: article.updatedAt ?? article.publishedAt,
-    inLanguage: locale === "ru" ? "ru-KZ" : "kk-KZ",
+    inLanguage: locale === "en" ? "en" : journalLocales[locale],
     mainEntityOfPage: localizePath(locale, `/journal/${article.slug}`),
     author: {
       "@type": "Organization",

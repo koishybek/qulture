@@ -6,7 +6,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useDialogBehavior } from "@/hooks/use-dialog-behavior";
 import { BagIcon, CloseIcon, MenuIcon, SearchIcon } from "@/components/ui/icons";
 import { useCart } from "@/components/commerce/cart-provider";
-import { LocaleSwitchLink } from "@/components/site/locale-switch-link";
+import { LocaleSwitcher } from "@/components/site/locale-switch-link";
+import { localizePath, type Locale } from "@/lib/i18n";
 
 export type SiteHeaderLabels = {
   shop: string;
@@ -22,13 +23,41 @@ export type SiteHeaderLabels = {
 };
 
 type SiteHeaderProps = {
-  locale: "ru" | "kz";
+  locale: Locale;
   labels: SiteHeaderLabels;
   wordmark?: string;
 };
 
-function localized(locale: string, path: string) {
-  return `/${locale}${path === "/" ? "" : path}`;
+type HeaderAccessibilityCopy = {
+  primaryNavigation: string;
+  navigationMenu: string;
+  language: string;
+  home: string;
+};
+
+const accessibilityCopy: Record<Locale | "en", HeaderAccessibilityCopy> = {
+  en: {
+    primaryNavigation: "Primary navigation",
+    navigationMenu: "Navigation menu",
+    language: "Select language",
+    home: "Home",
+  },
+  ru: {
+    primaryNavigation: "Основная навигация",
+    navigationMenu: "Меню навигации",
+    language: "Выбрать язык",
+    home: "Главная",
+  },
+  kz: {
+    primaryNavigation: "Негізгі навигация",
+    navigationMenu: "Навигация мәзірі",
+    language: "Тілді таңдау",
+    home: "Басты бет",
+  },
+};
+
+function localized(locale: Locale, path: string) {
+  return localizePath(locale, path);
 }
 
 export function SiteHeader({ locale, labels, wordmark = "QULTURE" }: SiteHeaderProps) {
@@ -39,6 +68,7 @@ export function SiteHeader({ locale, labels, wordmark = "QULTURE" }: SiteHeaderP
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const a11y = accessibilityCopy[locale];
   const isHome = pathname === `/${locale}` || pathname === `/${locale}/`;
   const isTransparent = isHome && !scrolled && !menuOpen;
 
@@ -58,7 +88,7 @@ export function SiteHeader({ locale, labels, wordmark = "QULTURE" }: SiteHeaderP
   return (
     <>
       <header className="site-header" data-transparent={isTransparent}>
-        <nav aria-label="Primary navigation" className="site-header__inner">
+        <nav aria-label={a11y.primaryNavigation} className="site-header__inner">
           <div className="site-header__left">
             <Link href={localized(locale, "/shop")} onClick={closeMenu}>{labels.shop}</Link>
             <Link href={localized(locale, "/technology")} onClick={closeMenu}>{labels.technology}</Link>
@@ -66,23 +96,29 @@ export function SiteHeader({ locale, labels, wordmark = "QULTURE" }: SiteHeaderP
             <Link href={localized(locale, "/about")} onClick={closeMenu}>{labels.about}</Link>
           </div>
 
-          <Link aria-label="QULTURE home" className="q-wordmark site-header__wordmark" href={localized(locale, "/")}>
+          <Link
+            aria-label={`${wordmark} — ${a11y.home}`}
+            className="q-wordmark site-header__wordmark"
+            href={localized(locale, "/")}
+            onClick={closeMenu}
+          >
             {wordmark}
           </Link>
 
           <div className="site-header__right">
-            <button className="site-header__ai" type="button" onClick={openAI}>
+            <button aria-label={labels.ai} className="site-header__ai" type="button" onClick={openAI}>
               {labels.ai}
             </button>
-            <LocaleSwitchLink ariaLabel={locale === "ru" ? "Қазақша" : "Русский"} className="site-header__locale" locale={locale} onClick={closeMenu}>
-              <span aria-current={locale === "ru" ? "page" : undefined}>RU</span>
-              <span aria-hidden="true">/</span>
-              <span aria-current={locale === "kz" ? "page" : undefined}>KZ</span>
-            </LocaleSwitchLink>
-            <Link className="site-header__icon-link" href={localized(locale, "/shop?search=1")}>
+            <LocaleSwitcher
+              ariaLabel={a11y.language}
+              className="site-header__locale"
+              locale={locale}
+              onClick={closeMenu}
+            />
+            <Link aria-label={labels.search} className="site-header__icon-link" href={localized(locale, "/shop?search=1")}>
               <SearchIcon /> <span>{labels.search}</span>
             </Link>
-            <Link className="site-header__text-link" href={localized(locale, "/account")}>{labels.account}</Link>
+            <Link aria-label={labels.account} className="site-header__text-link" href={localized(locale, "/account")}>{labels.account}</Link>
             <button aria-label={`${labels.bag}: ${bagCount}`} className="site-header__icon-link" type="button" onClick={openCart}>
               <BagIcon /> <span>{labels.bag} ({bagCount})</span>
             </button>
@@ -90,6 +126,7 @@ export function SiteHeader({ locale, labels, wordmark = "QULTURE" }: SiteHeaderP
 
           <button
             ref={menuButtonRef}
+            aria-controls="site-mobile-menu"
             aria-expanded={menuOpen}
             aria-label={menuOpen ? labels.close : labels.menu}
             className="site-header__mobile-button"
@@ -105,17 +142,24 @@ export function SiteHeader({ locale, labels, wordmark = "QULTURE" }: SiteHeaderP
       </header>
 
       {menuOpen ? (
-        <div ref={menuRef} aria-label={labels.menu} aria-modal="true" className="mobile-menu" role="dialog">
-          <nav className="mobile-menu__links">
+        <div
+          ref={menuRef}
+          aria-label={a11y.navigationMenu}
+          aria-modal="true"
+          className="mobile-menu"
+          id="site-mobile-menu"
+          role="dialog"
+        >
+          <nav aria-label={a11y.primaryNavigation} className="mobile-menu__links">
             <Link href={localized(locale, "/shop")} onClick={closeMenu}>{labels.shop}</Link>
             <Link href={localized(locale, "/technology")} onClick={closeMenu}>{labels.technology}</Link>
             <Link href={localized(locale, "/journal")} onClick={closeMenu}>{labels.journal}</Link>
             <Link href={localized(locale, "/about")} onClick={closeMenu}>{labels.about}</Link>
           </nav>
           <div className="mobile-menu__utility">
-            <button type="button" onClick={() => { closeMenu(); openAI(); }}>{labels.ai}</button>
-            <Link href={localized(locale, "/account")} onClick={closeMenu}>{labels.account}</Link>
-            <LocaleSwitchLink locale={locale} onClick={closeMenu}>{locale === "ru" ? "Қазақша" : "Русский"}</LocaleSwitchLink>
+            <button aria-label={labels.ai} type="button" onClick={() => { closeMenu(); openAI(); }}>{labels.ai}</button>
+            <Link aria-label={labels.account} href={localized(locale, "/account")} onClick={closeMenu}>{labels.account}</Link>
+            <LocaleSwitcher ariaLabel={a11y.language} className="site-header__locale" locale={locale} onClick={closeMenu} />
           </div>
         </div>
       ) : null}

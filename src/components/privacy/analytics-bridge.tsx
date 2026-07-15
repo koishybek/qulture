@@ -3,8 +3,9 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { trackEvent } from "@/lib/analytics/client";
+import type { Locale } from "@/lib/i18n";
 
-export function AnalyticsBridge({ locale }: { locale: "ru" | "kz" }) {
+export function AnalyticsBridge({ locale }: { locale: Locale }) {
   const pathname = usePathname();
 
   useEffect(() => {

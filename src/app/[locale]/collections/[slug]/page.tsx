@@ -34,8 +34,10 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
               alternates: {
                 canonical,
                 languages: {
+                  en: absoluteSiteUrl(origin, `/en/collections/${slug}`)!,
                   ru: absoluteSiteUrl(origin, `/ru/collections/${slug}`)!,
                   kk: absoluteSiteUrl(origin, `/kz/collections/${slug}`)!,
+                  "x-default": absoluteSiteUrl(origin, `/en/collections/${slug}`)!,
                 },
               },
             }

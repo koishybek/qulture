@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 import { HandoffRequestSchema } from "@/lib/ai/schemas";
 import { executeAITool } from "@/lib/ai/tools";
+import type { AILocale } from "@/lib/ai/types";
 import { db } from "@/lib/db";
 import { isSameOrigin, requestIp } from "@/lib/http";
 import {
@@ -17,6 +18,57 @@ export const dynamic = "force-dynamic";
 
 const MAX_BODY_BYTES = 32_768;
 
+const apiCopy: Record<
+  AILocale,
+  {
+    forbidden: string;
+    rateLimited: string;
+    policyUnavailable: string;
+    captureDisabled: string;
+    invalidRequest: string;
+    checkData: string;
+    policyChanged: string;
+    keyRequired: string;
+  }
+> = {
+  ru: {
+    forbidden: "Недопустимый источник запроса.",
+    rateLimited: "Повторите запрос позже.",
+    policyUnavailable: "Не удалось проверить версию политики.",
+    captureDisabled: "Сбор контактов отключён до утверждения политики.",
+    invalidRequest: "Некорректный формат запроса.",
+    checkData: "Проверьте данные передачи вопроса.",
+    policyChanged: "Версия политики изменилась. Обновите страницу.",
+    keyRequired: "Для безопасной отправки нужен Idempotency-Key.",
+  },
+  kz: {
+    forbidden: "Сұрау көзіне рұқсат жоқ.",
+    rateLimited: "Сұрауды кейінірек қайталаңыз.",
+    policyUnavailable: "Саясат нұсқасын тексеру мүмкін болмады.",
+    captureDisabled: "Саясат бекітілгенге дейін байланыс деректерін жинау өшірілген.",
+    invalidRequest: "Сұрау пішімі қате.",
+    checkData: "Сұрақты жіберу деректерін тексеріңіз.",
+    policyChanged: "Саясат нұсқасы өзгерді. Бетті жаңартыңыз.",
+    keyRequired: "Қауіпсіз жіберу үшін Idempotency-Key қажет.",
+  },
+  en: {
+    forbidden: "This request origin is not allowed.",
+    rateLimited: "Please try again later.",
+    policyUnavailable: "We could not verify the policy version.",
+    captureDisabled: "Contact collection is disabled until the policy is approved.",
+    invalidRequest: "The request format is invalid.",
+    checkData: "Check the handoff details.",
+    policyChanged: "The policy version changed. Refresh the page.",
+    keyRequired: "An Idempotency-Key is required to submit safely.",
+  },
+};
+
+function headerLocale(request: Request): AILocale {
+  const locale = request.headers.get("x-qulture-locale")?.trim().toLowerCase();
+  if (locale === "en" || locale === "kz") return locale;
+  return "ru";
+}
+
 function requestCorrelationId(request: Request): string {
   const supplied = request.headers.get("x-correlation-id")?.trim();
   return supplied && /^[a-zA-Z0-9_.:-]{8,80}$/.test(supplied)
@@ -26,15 +78,16 @@ function requestCorrelationId(request: Request): string {
 
 export async function POST(request: Request) {
   const correlationId = requestCorrelationId(request);
+  const requestLocale = headerLocale(request);
   if (!isSameOrigin(request)) {
     return NextResponse.json(
-      { status: "validation_error", tool: "create_handoff", correlationId, data: null, error: { code: "invalid_origin", message: "Недопустимый источник запроса." } },
+      { status: "validation_error", tool: "create_handoff", correlationId, data: null, error: { code: "invalid_origin", message: apiCopy[requestLocale].forbidden } },
       { status: 403, headers: { "Cache-Control": "no-store" } },
     );
   }
   if (!consumeRateLimit(`handoff:${requestIp(request)}`, 8, 10 * 60_000).allowed) {
     return NextResponse.json(
-      { status: "unavailable", tool: "create_handoff", correlationId, data: null, error: { code: "too_many_requests", message: "Повторите запрос позже." } },
+      { status: "unavailable", tool: "create_handoff", correlationId, data: null, error: { code: "too_many_requests", message: apiCopy[requestLocale].rateLimited } },
       { status: 429, headers: { "Cache-Control": "no-store", "Retry-After": "600" } },
     );
   }
@@ -47,13 +100,13 @@ export async function POST(request: Request) {
     policyVersion = settings?.consentPolicyVersion ?? DEFAULT_CONSENT_POLICY_VERSION;
   } catch {
     return NextResponse.json(
-      { status: "unavailable", tool: "create_handoff", correlationId, data: null, error: { code: "policy_unavailable", message: "Не удалось проверить версию политики." } },
+      { status: "unavailable", tool: "create_handoff", correlationId, data: null, error: { code: "policy_unavailable", message: apiCopy[requestLocale].policyUnavailable } },
       { status: 503, headers: { "Cache-Control": "no-store" } },
     );
   }
   if (!canCapturePiiUnderPolicy({ policyVersion })) {
     return NextResponse.json(
-      { status: "unavailable", tool: "create_handoff", correlationId, data: null, error: { code: "draft_policy_capture_disabled", message: "Сбор контактов отключён до утверждения политики." } },
+      { status: "unavailable", tool: "create_handoff", correlationId, data: null, error: { code: "draft_policy_capture_disabled", message: apiCopy[requestLocale].captureDisabled } },
       { status: 503, headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -71,7 +124,7 @@ export async function POST(request: Request) {
         tool: "create_handoff",
         correlationId,
         data: null,
-        error: { code: "invalid_request", message: "Некорректный формат запроса." },
+        error: { code: "invalid_request", message: apiCopy[requestLocale].invalidRequest },
       },
       { status: 400 },
     );
@@ -87,7 +140,7 @@ export async function POST(request: Request) {
         data: null,
         error: {
           code: "invalid_request",
-          message: "Проверьте данные передачи вопроса.",
+          message: apiCopy[requestLocale].checkData,
           issues: parsed.error.issues.map((issue) => ({
             path: issue.path.join("."),
             message: issue.message,
@@ -99,7 +152,7 @@ export async function POST(request: Request) {
   }
   if (parsed.data.policyVersion !== policyVersion) {
     return NextResponse.json(
-      { status: "validation_error", tool: "create_handoff", correlationId, data: null, error: { code: "policy_version_changed", message: "Версия политики изменилась. Обновите страницу." } },
+      { status: "validation_error", tool: "create_handoff", correlationId, data: null, error: { code: "policy_version_changed", message: apiCopy[parsed.data.locale ?? requestLocale].policyChanged } },
       { status: 409, headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -115,7 +168,7 @@ export async function POST(request: Request) {
         data: null,
         error: {
           code: "idempotency_key_required",
-          message: "Для безопасной отправки нужен Idempotency-Key.",
+          message: apiCopy[parsed.data.locale ?? requestLocale].keyRequired,
         },
       },
       { status: 400 },

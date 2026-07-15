@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { AIActionSchema, type AIAction } from "@/lib/ai/schemas";
+import type { AILocale } from "@/lib/ai/types";
 
 export type AIClientMessage = {
   id: string;
@@ -36,14 +37,22 @@ const StoredStateSchema = z
 const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/giu;
 const PHONE_PATTERN = /(?:\+?\d[\d ()-]{7,}\d)/gu;
 
+const redactionCopy: Record<AILocale, { email: string; phone: string; measurement: string }> = {
+  en: { email: "[email hidden]", phone: "[phone hidden]", measurement: "[hidden without consent]" },
+  ru: { email: "[email скрыт]", phone: "[телефон скрыт]", measurement: "[скрыто без согласия]" },
+  kz: { email: "[email жасырылды]", phone: "[телефон жасырылды]", measurement: "[келісімсіз жасырылды]" },
+};
+
 export function redactSensitiveSessionText(
   content: string,
   measurementConsent: boolean,
+  locale: AILocale = "en",
 ): string {
+  const labels = redactionCopy[locale];
   let safe = content
     .slice(0, 2_000)
-    .replace(EMAIL_PATTERN, "[email скрыт]")
-    .replace(PHONE_PATTERN, "[телефон скрыт]");
+    .replace(EMAIL_PATTERN, labels.email)
+    .replace(PHONE_PATTERN, labels.phone);
 
   if (!measurementConsent) {
     const measurementLabel =
@@ -53,11 +62,11 @@ export function redactSensitiveSessionText(
         `${measurementLabel.source}\\s*[:=—-]?\\s*\\d{2,3}(?:[.,]\\d+)?\\s*(?:см|cm|кг|kg)?`,
         "giu",
       ),
-      "$1: [скрыто без согласия]",
+      `$1: ${labels.measurement}`,
     );
     safe = safe.replace(
       /\b\d{2,3}(?:[.,]\d+)?\s*(?:см|cm|кг|kg)\b/giu,
-      "[скрыто без согласия]",
+      labels.measurement,
     );
   }
   return safe;
@@ -78,15 +87,15 @@ export function parseAIClientState(raw: string | null): AIClientState | null {
   }
 }
 
-export function serializeAIClientState(state: AIClientState): string {
+export function serializeAIClientState(state: AIClientState, locale: AILocale = "en"): string {
   const measurementConsent = state.measurementConsent === true;
   const messages = state.messages.slice(-30).map((message) => ({
     ...message,
-    content: redactSensitiveSessionText(message.content, measurementConsent),
+    content: redactSensitiveSessionText(message.content, measurementConsent, locale),
     actions: message.actions?.map((action) => ({
       ...action,
-      label: redactSensitiveSessionText(action.label, measurementConsent).slice(0, 80),
-      value: redactSensitiveSessionText(action.value, measurementConsent).slice(0, 300),
+      label: redactSensitiveSessionText(action.label, measurementConsent, locale).slice(0, 80),
+      value: redactSensitiveSessionText(action.value, measurementConsent, locale).slice(0, 300),
     })),
   }));
   return JSON.stringify({

@@ -17,7 +17,7 @@ const eventSchema = z.object({
   name: z.enum(eventNames),
   category: z.enum(["NECESSARY", "ANALYTICS", "MARKETING"]).default("ANALYTICS"),
   sessionId: z.string().trim().max(120).optional(),
-  locale: z.enum(["ru", "kz"]).optional(),
+  locale: z.enum(["en", "ru", "kz"]).optional(),
   correlationId: z.string().trim().max(120).optional(),
   payload: z.record(z.string(), z.union([z.string().max(240), z.number(), z.boolean(), z.null()])).optional(),
 });
@@ -40,7 +40,14 @@ export async function POST(request: Request) {
         consentCategory: input.category,
         sessionId: input.sessionId,
         anonymousId: subjectId,
-        language: input.locale === "kz" ? "KZ" : input.locale === "ru" ? "RU" : undefined,
+        language:
+          input.locale === "en"
+            ? "EN"
+            : input.locale === "kz"
+              ? "KZ"
+              : input.locale === "ru"
+                ? "RU"
+                : undefined,
         correlationId: input.correlationId,
         payload: input.payload,
       },

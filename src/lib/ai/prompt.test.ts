@@ -18,4 +18,12 @@ describe("QULTURE AI guardrails", () => {
     expect(prompt).toContain("Тек қазақ тілінде жауап бер");
     expect(prompt).toContain("араластырма");
   });
+
+  it("locks English responses to English and keeps the same fact boundaries", () => {
+    const prompt = buildSystemPrompt("en");
+    expect(prompt).toContain("Reply only in English");
+    expect(prompt).toContain("Never invent prices");
+    expect(prompt).toContain("only come from recommend_size");
+    expect(prompt).toContain("published/approved knowledge");
+  });
 });

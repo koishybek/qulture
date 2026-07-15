@@ -146,4 +146,12 @@ describe("AI schemas", () => {
       }).success,
     ).toBe(false);
   });
+
+  it("accepts English as a first-class AI locale", () => {
+    const parsed = AIRequestSchema.parse({
+      message: "Help me choose a size",
+      locale: "en",
+    });
+    expect(parsed.locale).toBe("en");
+  });
 });

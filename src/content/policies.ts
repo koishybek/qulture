@@ -2,6 +2,13 @@ import type { Localized } from "@/lib/i18n";
 import type { LegalPage, LegalStatus } from "./types";
 
 const draftStatus: Localized<LegalStatus> = {
+  en: {
+    label: "Legal draft — approval required",
+    message:
+      "This is a working structure for the interface. It is not an effective policy, public offer or legal advice. The business owner and a qualified specialist must approve the entity details, legal bases, time periods and wording in writing.",
+    version: "DRAFT 2026-07-15",
+    effectiveLabel: "Not effective",
+  },
   ru: {
     label: "Юридический черновик — требуется утверждение",
     message:
@@ -19,6 +26,71 @@ const draftStatus: Localized<LegalStatus> = {
 };
 
 export const deliveryAndReturnsContent: Localized<LegalPage> = {
+  en: {
+    seo: {
+      title: "Delivery and returns — terms draft",
+      description:
+        "The structure for QULTURE’s future delivery, exchange and return terms. This draft awaits operational and legal approval.",
+    },
+    eyebrow: "DELIVERY & RETURNS / DRAFT",
+    title: "Terms should be clear before payment",
+    lead:
+      "QULTURE is not taking orders yet. Delivery areas, rates, timelines, carriers and return rules are not approved, so we do not replace them with approximate promises.",
+    status: "Commerce is unavailable",
+    legalStatus: draftStatus.en,
+    sections: [
+      {
+        id: "delivery-before-launch",
+        eyebrow: "01 / DELIVERY",
+        title: "What will be shown before checkout",
+        paragraphs: [
+          "Once the operating model is connected, a customer will see the available delivery area, method, calculated cost and expected timing before proceeding to payment. If an exact calculation is not possible, the interface must explain who will confirm it and when.",
+          "A pre-order dispatch date or range will be shown separately and never confused with an in-stock status.",
+        ],
+        bullets: [
+          "Cities and territories served.",
+          "The carrier or collection method.",
+          "Cost, timing and tracking process.",
+          "Steps for delays, loss or damage in transit.",
+        ],
+      },
+      {
+        id: "returns-flow",
+        eyebrow: "02 / RETURNS",
+        title: "A clear request path",
+        paragraphs: [
+          "The planned interface will let a customer start a request from an order or through the official support channel. Before submitting, a person should see the applicable terms, required information and next steps.",
+          "Time limits, item condition, exclusions, return-delivery cost and refund method will be published only after legal approval. No specific return terms are promised now.",
+        ],
+      },
+      {
+        id: "size-exchange",
+        eyebrow: "03 / SIZE",
+        title: "A size exchange is part of the future process",
+        paragraphs: [
+          "The system is designed to keep the size of every set component with an order and to handle a request for a single item correctly. Availability, timing and financial consequences of an exchange depend on the seller’s final rules.",
+        ],
+      },
+      {
+        id: "approval-checklist",
+        eyebrow: "04 / BEFORE PUBLICATION",
+        title: "What still needs approval",
+        paragraphs: [
+          "This page becomes effective only after its operational and legal fields are completed and a new version is published.",
+        ],
+        bullets: [
+          "Full seller details and an official support contact.",
+          "Service areas, carriers, rates and promised timelines.",
+          "Cancellation, exchange, return and defect-handling terms.",
+          "The refund method and treatment of set discounts.",
+        ],
+      },
+    ],
+    related: [
+      { href: "/terms", label: "Sales terms draft" },
+      { href: "/contacts", label: "Official contacts status" },
+    ],
+  },
   ru: {
     seo: {
       title: "Доставка и возврат — проект условий",
@@ -152,6 +224,83 @@ export const deliveryAndReturnsContent: Localized<LegalPage> = {
 };
 
 export const privacyContent: Localized<LegalPage> = {
+  en: {
+    seo: {
+      title: "Privacy policy — draft",
+      description:
+        "The structure of QULTURE’s personal-data policy. It is not effective and requires approval by the owner and legal counsel.",
+    },
+    eyebrow: "PRIVACY / DRAFT",
+    title: "Collect only what is needed",
+    lead:
+      "This draft sets out a data-minimisation principle and shows which decisions need to be made before public collection of contacts and orders.",
+    legalStatus: draftStatus.en,
+    sections: [
+      {
+        id: "controller",
+        eyebrow: "01 / CONTROLLER",
+        title: "Who processes the data",
+        paragraphs: [
+          "The controller’s name, registration details and official address have not been provided yet. Without them, this policy should not be treated as complete or effective.",
+        ],
+      },
+      {
+        id: "data-categories",
+        eyebrow: "02 / CATEGORIES",
+        title: "Data that may need to be processed",
+        paragraphs: [
+          "The data set depends on the action a person chooses. A pre-launch form may ask for a contact and product interest; a future purchase may need data for payment, delivery and support. Fit information is requested separately and should not be required without a need.",
+        ],
+        bullets: [
+          "A contact detail and the chosen type of service or marketing notification.",
+          "Product preferences: component, size, colour and city, if provided by the person.",
+          "Order data, delivery address and support history after commerce launches.",
+          "Technical information about consent, security and session operation.",
+        ],
+        note: "Full payment credentials and secrets must not be sent to QULTURE Assist or stored in analytics.",
+      },
+      {
+        id: "purposes-bases",
+        eyebrow: "03 / PURPOSES AND BASES",
+        title: "A separate explanation for each purpose",
+        paragraphs: [
+          "Processing should be tied to a specific purpose: responding to a request, notifying about availability, fulfilling an order, providing security or, with a separate choice, sending marketing materials.",
+          "A qualified specialist must determine the applicable legal bases and required notices for the seller’s model and jurisdiction. They are not completed in this draft.",
+        ],
+      },
+      {
+        id: "ai",
+        eyebrow: "04 / QULTURE ASSIST",
+        title: "A conversation is not permission for marketing",
+        paragraphs: [
+          "The assistant should explain the purpose before first collecting a phone number or email address. Full conversation text is not used as an analytics payload, and sensitive fields in logs must be masked.",
+          "Conversation retention, deletion method and the list of AI providers must be approved before production launch.",
+        ],
+      },
+      {
+        id: "sharing-retention",
+        eyebrow: "05 / SHARING AND RETENTION",
+        title: "Providers and time periods still need to be named",
+        paragraphs: [
+          "The final version will list categories of data recipients, such as hosting, payment gateway, delivery and notification providers, only after providers are selected and agreements are checked.",
+          "Specific retention periods for each category are not approved. Saying that data is kept for as long as necessary without a retention schedule is not a complete policy.",
+        ],
+      },
+      {
+        id: "rights-contact",
+        eyebrow: "06 / USER CHOICE",
+        title: "Access, correction, deletion and withdrawal",
+        paragraphs: [
+          "The effective version will explain how to request access to data, correct it, delete it where applicable and withdraw consent. The official address for those requests is pending confirmation and will be published in Contacts.",
+        ],
+      },
+    ],
+    related: [
+      { href: "/consent", label: "How consent choices work" },
+      { href: "/cookies", label: "Cookie categories" },
+      { href: "/contacts", label: "Contacts status" },
+    ],
+  },
   ru: {
     seo: {
       title: "Политика конфиденциальности — черновик",
@@ -309,6 +458,75 @@ export const privacyContent: Localized<LegalPage> = {
 };
 
 export const termsContent: Localized<LegalPage> = {
+  en: {
+    seo: {
+      title: "Sales terms — draft",
+      description:
+        "A proposed structure for QULTURE’s future sales terms. Commerce is unavailable and this document is not a public offer.",
+    },
+    eyebrow: "TERMS / DRAFT",
+    title: "Sales terms are not effective yet",
+    lead:
+      "There is no published catalogue available to buy from and no payment is accepted. This document shows a future structure; it does not create an offer to enter into a contract.",
+    status: "Not a public offer",
+    legalStatus: draftStatus.en,
+    sections: [
+      {
+        id: "seller",
+        title: "1. Seller and scope",
+        paragraphs: [
+          "The final version must name the seller, registration and contact details, sales territory and the applicable version of the terms. Those fields are not completed yet.",
+        ],
+      },
+      {
+        id: "catalog",
+        title: "2. Catalogue and product information",
+        paragraphs: [
+          "Only published products with a current price and status will be available to order. Drafts, demonstration entries and future categories must not create an impression of availability.",
+          "Composition, colour, measurements and features will be displayed from approved data. Images and screens can represent a shade with limitations, which the final wording must describe.",
+        ],
+      },
+      {
+        id: "order-contract",
+        title: "3. Order and contract formation",
+        paragraphs: [
+          "The process for submitting an order, seller confirmation, correcting errors and cancellation must be agreed with the selected commerce platform and legal model. This draft does not define when a contract is formed.",
+        ],
+      },
+      {
+        id: "prices-payment",
+        title: "4. Price and payment",
+        paragraphs: [
+          "Currency, taxes, payment methods, the charge timing, pre-order rules and refunds are not approved yet. Until then, the site does not publish example prices or simulate payment.",
+        ],
+      },
+      {
+        id: "bundles",
+        title: "5. Sets",
+        paragraphs: [
+          "A future order keeps the top and bottom as linked but separate components with their own sizes. Set pricing and recalculation after returning one component must be shown before payment and set out in the final terms.",
+        ],
+      },
+      {
+        id: "delivery-returns",
+        title: "6. Delivery, exchanges and returns",
+        paragraphs: [
+          "Applicable methods, timing, cost and exclusions will be covered in a separate document and summarized at checkout. Those terms are not approved yet.",
+        ],
+      },
+      {
+        id: "liability-contact",
+        title: "7. Liability, requests and versions",
+        paragraphs: [
+          "Liability limits, claims process, governing law, dispute resolution and an official address require legal wording. Each published version must have a number and date, and the version applicable to an order must be recorded with it.",
+        ],
+      },
+    ],
+    related: [
+      { href: "/delivery-and-returns", label: "Delivery and returns draft" },
+      { href: "/privacy", label: "Data policy draft" },
+    ],
+  },
   ru: {
     seo: {
       title: "Условия продажи — черновик",
@@ -450,6 +668,58 @@ export const termsContent: Localized<LegalPage> = {
 };
 
 export const cookiesContent: Localized<LegalPage> = {
+  en: {
+    seo: {
+      title: "Cookie policy — draft",
+      description:
+        "QULTURE cookie categories, consent principles and the details that must be confirmed before analytics and marketing are enabled.",
+    },
+    eyebrow: "COOKIES / DRAFT",
+    title: "Optional means only after a choice",
+    lead:
+      "Necessary functions support the site. Analytics and marketing should remain off until a person explicitly permits them.",
+    legalStatus: draftStatus.en,
+    sections: [
+      {
+        id: "categories",
+        title: "1. Three categories",
+        paragraphs: [
+          "Categories are separated by purpose. Agreeing to one optional category must not automatically enable another.",
+        ],
+        bullets: [
+          "Necessary: security, session and bag operation, and saving a consent choice.",
+          "Analytics: measuring site use and errors after permission is given.",
+          "Marketing: advertising and personalization technology after a separate permission.",
+        ],
+      },
+      {
+        id: "current-state",
+        title: "2. Current pre-launch behaviour",
+        paragraphs: [
+          "The interface saves selected categories, the policy version and update time in the browser, and sends a consent record to the server when it is available. This describes technical behaviour, not a complete cookie register.",
+          "A list of specific cookies, domains, providers, purposes and retention periods must be compiled from services actually connected before production launch. We do not publish invented entries in advance.",
+        ],
+      },
+      {
+        id: "choices",
+        title: "3. Available actions",
+        paragraphs: [
+          "A person can accept all categories, reject optional categories, configure each category and change the choice later. Rejecting analytics and marketing must not block the site’s main content.",
+        ],
+      },
+      {
+        id: "approval",
+        title: "4. What requires approval",
+        paragraphs: [
+          "Before third-party services are enabled, the owner and a qualified specialist must review the register, legal bases, time periods, withdrawal mechanism and any cross-border transfer.",
+        ],
+      },
+    ],
+    related: [
+      { href: "/consent", label: "Manage choices" },
+      { href: "/privacy", label: "Privacy policy draft" },
+    ],
+  },
   ru: {
     seo: {
       title: "Политика cookie — черновик",
@@ -557,6 +827,52 @@ export const cookiesContent: Localized<LegalPage> = {
 };
 
 export const consentContent: Localized<LegalPage> = {
+  en: {
+    seo: {
+      title: "Consent and data settings — draft",
+      description:
+        "How QULTURE separates necessary, service and marketing consent. The legal wording still requires approval.",
+    },
+    eyebrow: "CONSENT / DRAFT",
+    title: "One choice does not mean consent to everything",
+    lead:
+      "Getting an answer, joining a waitlist and subscribing to marketing are different actions. Each needs a clear explanation and a separate choice.",
+    legalStatus: draftStatus.en,
+    sections: [
+      {
+        id: "principles",
+        title: "1. How purposes are separated",
+        paragraphs: [
+          "Necessary processing supports the requested action and security. A service notification relates to a specific request, for example notifying someone when a selected variant is available. A marketing subscription is never enabled with it automatically.",
+        ],
+      },
+      {
+        id: "record",
+        title: "2. What the system records",
+        paragraphs: [
+          "A choice record contains the categories, version of the text shown and time. For a form it also records the specific consent purpose, but not unnecessary conversation content or sensitive data.",
+        ],
+      },
+      {
+        id: "change",
+        title: "3. How to change a choice",
+        paragraphs: [
+          "Cookie settings can be opened again from this page or the footer. A withdrawal route for service and marketing messages, and an official contact for requests, must be added after providers and business details are approved.",
+        ],
+      },
+      {
+        id: "legal-copy",
+        title: "4. Consent wording is not approved yet",
+        paragraphs: [
+          "A qualified specialist must prepare the consent wording for personal-data processing, list of responsible parties, retention period and applicable rights. This information page does not replace that consent.",
+        ],
+      },
+    ],
+    related: [
+      { href: "/cookies", label: "Cookie categories" },
+      { href: "/privacy", label: "Data policy draft" },
+    ],
+  },
   ru: {
     seo: {
       title: "Согласия и настройки данных — черновик",

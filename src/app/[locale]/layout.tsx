@@ -20,6 +20,32 @@ type LocaleLayoutProps = {
   params: Promise<{ locale: string }>;
 };
 
+const localeMetadata: Record<Locale, {
+  title: string;
+  description: string;
+  openGraphLocale: string;
+  documentLanguage: string;
+}> = {
+  en: {
+    title: "Designed for changing climates",
+    description: "Urban apparel designed for wind, layers, and movement.",
+    openGraphLocale: "en_US",
+    documentLanguage: "en",
+  },
+  ru: {
+    title: "Для меняющегося климата",
+    description: "Городская одежда для ветра, слоёв и движения.",
+    openGraphLocale: "ru_KZ",
+    documentLanguage: "ru",
+  },
+  kz: {
+    title: "Құбылмалы климатқа арналған",
+    description: "Желге, қабаттарға және қозғалысқа арналған қалалық киім.",
+    openGraphLocale: "kk_KZ",
+    documentLanguage: "kk",
+  },
+};
+
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
@@ -27,33 +53,53 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Pick<LocaleLayoutProps, "params">): Promise<Metadata> {
   const { locale: rawLocale } = await params;
   if (!isLocale(rawLocale)) return {};
-  const isRu = rawLocale === "ru";
+
+  const locale = rawLocale;
+  const seo = localeMetadata[locale];
   const settings = await getSiteSettings();
   const brandAssets = jsonObject(settings?.brandAssets);
   const socialPreview = internalAsset(brandAssets.socialPreview, "/media/hero/hero-poster.png");
   const favicon = internalAsset(brandAssets.favicon, "/icon.svg");
   const siteOrigin = configuredSiteOrigin();
-  const canonical = absoluteSiteUrl(siteOrigin, `/${rawLocale}`);
+  const canonical = absoluteSiteUrl(siteOrigin, `/${locale}`);
+  const englishCanonical = absoluteSiteUrl(siteOrigin, "/en");
   const russianCanonical = absoluteSiteUrl(siteOrigin, "/ru");
   const kazakhCanonical = absoluteSiteUrl(siteOrigin, "/kz");
   const socialImage = absoluteSiteUrl(siteOrigin, socialPreview);
+  const alternateOpenGraphLocales = locales
+    .filter((candidate) => candidate !== locale)
+    .map((candidate) => localeMetadata[candidate].openGraphLocale);
+
   return {
-    title: isRu ? "QULTURE — Для меняющегося климата" : "QULTURE — Құбылмалы климатқа арналған",
-    description: isRu
-      ? "Городская одежда для ветра, слоёв и движения."
-      : "Желге, қабаттарға және қозғалысқа арналған қалалық киім.",
-    ...(canonical && russianCanonical && kazakhCanonical
+    title: seo.title,
+    description: seo.description,
+    ...(canonical && englishCanonical && russianCanonical && kazakhCanonical
       ? {
           alternates: {
             canonical,
-            languages: { ru: russianCanonical, kk: kazakhCanonical },
+            languages: {
+              en: englishCanonical,
+              ru: russianCanonical,
+              kk: kazakhCanonical,
+              "x-default": englishCanonical,
+            },
           },
         }
       : {}),
     icons: { icon: favicon },
-    ...(socialImage ? { openGraph: { images: [{ url: socialImage }] } } : {}),
+    openGraph: {
+      type: "website",
+      siteName: "QULTURE",
+      title: `QULTURE — ${seo.title}`,
+      description: seo.description,
+      locale: seo.openGraphLocale,
+      alternateLocale: alternateOpenGraphLocales,
+      ...(socialImage ? { images: [{ url: socialImage }] } : {}),
+    },
     twitter: {
       card: "summary_large_image",
+      title: `QULTURE — ${seo.title}`,
+      description: seo.description,
       ...(socialImage ? { images: [socialImage] } : {}),
     },
   };
@@ -93,6 +139,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     "@type": "Organization",
     name: "QULTURE",
     ...(organizationUrl ? { url: organizationUrl } : {}),
+    inLanguage: localeMetadata[locale].documentLanguage,
     foundingLocation: { "@type": "Place", name: "Astana, Kazakhstan" },
   };
 

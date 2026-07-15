@@ -4,6 +4,19 @@ import type { Localized, Locale } from "@/lib/i18n";
 import type { ContentSection, EditorialPage, JournalArticle } from "./types";
 
 export const journalIndexContent: Localized<EditorialPage> = {
+  en: {
+    seo: {
+      title: "Development journal",
+      description:
+        "Verifiable notes on QULTURE product development, digital systems and launch progress without invented timing or specifications.",
+    },
+    eyebrow: "JOURNAL / PROGRESS",
+    title: "Showing the process without a finished legend",
+    lead:
+      "Only meaningful updates appear here: what has been decided, what is being verified and which information is still needed before launch.",
+    status: "Pre-launch journal",
+    sections: [],
+  },
   ru: {
     seo: {
       title: "Журнал разработки",
@@ -33,6 +46,76 @@ export const journalIndexContent: Localized<EditorialPage> = {
 };
 
 const progressArticle: Localized<JournalArticle> = {
+  en: {
+    slug: "building-qulture-openly",
+    seo: {
+      title: "Building QULTURE openly: the pre-launch stage",
+      description:
+        "A clear note on QULTURE’s current stage: what is already built into the system and what information cannot be published yet.",
+    },
+    eyebrow: "PROGRESS NOTE / 001",
+    title: "Building QULTURE openly",
+    excerpt:
+      "What is already built into the product and digital foundation — and why there will be no invented prices, properties or dates before verification.",
+    publishedAt: "2026-07-15T00:00:00.000Z",
+    readingMinutes: 4,
+    author: "QULTURE",
+    isFallback: true,
+    sections: [
+      {
+        id: "current-stage",
+        title: "The current stage",
+        paragraphs: [
+          "QULTURE is in development. We are building the foundation for the future product and store: a localized site, content model, data-handling rules, product architecture and an assistant that must acknowledge the limits of its knowledge.",
+          "The catalogue has not been published. There are no live prices, stock levels, composition details, temperature ranges or launch date because those details need approved sources, not a mock-up.",
+        ],
+      },
+      {
+        id: "what-is-built",
+        title: "What is already defined at system level",
+        paragraphs: [
+          "The first product focus is an urban top and trousers. The system is designed so each component can be chosen separately, while a set can carry independent sizes for top and bottom.",
+          "English, Russian and Kazakh are available as full localized versions. Each language has its own public editorial content rather than a fallback from another language.",
+        ],
+        bullets: [
+          "One pre-launch and commerce framework that does not need a later site rebuild.",
+          "Separate service notifications and marketing consent.",
+          "A source and version for product, policy and AI answers.",
+          "Static content as a safe fallback when the database is temporarily unavailable.",
+        ],
+      },
+      {
+        id: "why-no-demo-store",
+        title: "Why we do not stage a finished store",
+        paragraphs: [
+          "A demonstration price or card without an approved product may look convincing, but it creates the wrong expectation. The pre-launch version therefore shows direction, process and status without fake reviews, stock or promises.",
+          "The same rule applies to technology: a use scenario appears only with composition, measurements, fit testing and limits. Fabric weight does not turn itself into a temperature rating.",
+        ],
+      },
+      {
+        id: "release-gates",
+        title: "What needs to happen before commerce opens",
+        paragraphs: [
+          "Commerce will not switch on for a pleasing date. It opens after specific release gates are met, with status updated as the team makes decisions.",
+        ],
+        bullets: [
+          "Products, variants, prices, stock and fit information are approved.",
+          "Composition, care, permitted claims and visual materials are checked.",
+          "The seller, payment and delivery providers, and pre-order rules are chosen.",
+          "Sales terms, privacy, consent, delivery and returns are approved.",
+          "Key desktop and mobile scenarios, including accessibility, are checked.",
+        ],
+      },
+      {
+        id: "next-notes",
+        title: "What future notes will cover",
+        paragraphs: [
+          "The Journal will record only progress that can be shown concretely: the sizing logic, material-verification protocol, how the set works and decisions made before commerce opens.",
+          "When a fact is not verified yet, it remains a question instead of becoming marketing copy.",
+        ],
+      },
+    ],
+  },
   ru: {
     slug: "building-qulture-openly",
     seo: {
@@ -62,7 +145,7 @@ const progressArticle: Localized<JournalArticle> = {
         title: "Что уже определено на уровне системы",
         paragraphs: [
           "Первый продуктовый фокус — городской верх и брюки. Система проектируется так, чтобы каждый компонент можно было выбрать отдельно, а в комплекте — указать разные размеры верха и низа.",
-          "Русская и казахская версии существуют как полноценные отдельные поля. Английская версия предусмотрена архитектурно, но останется скрытой до готовности контента и операций.",
+          "Английская, русская и казахская версии существуют как полноценные отдельные поля. У каждой версии есть собственный редакционный контент без fallback из другого языка.",
         ],
         bullets: [
           "Один pre-launch и commerce-контур без будущей пересборки сайта.",
@@ -132,7 +215,7 @@ const progressArticle: Localized<JournalArticle> = {
         title: "Жүйе деңгейінде не анықталды",
         paragraphs: [
           "Алғашқы өнім бағыты — қалалық үстіңгі бөлік пен шалбар. Жүйе әр компонентті бөлек таңдауға, ал жиынтықта үстіңгі және астыңғы өлшемдерді тәуелсіз белгілеуге бейімделеді.",
-          "Орыс және қазақ нұсқалары толыққанды бөлек өрістер ретінде жасалған. Ағылшын нұсқасы архитектурада қарастырылған, бірақ контент пен операция дайын болғанша жасырын қалады.",
+          "Ағылшын, орыс және қазақ нұсқалары толыққанды бөлек өрістер ретінде жасалған. Әр нұсқаның басқа тілден fallback жасамайтын жеке редакциялық контенті бар.",
         ],
         bullets: [
           "Сайтты кейін қайта құрмайтын бір pre-launch және commerce контуры.",
@@ -176,6 +259,7 @@ const progressArticle: Localized<JournalArticle> = {
 };
 
 const staticArticles: Localized<readonly JournalArticle[]> = {
+  en: [progressArticle.en],
   ru: [progressArticle.ru],
   kz: [progressArticle.kz],
 };
@@ -184,18 +268,23 @@ type JournalRecord = {
   slug: string;
   titleRu: string;
   titleKz: string;
+  titleEn: string | null;
   excerptRu: string;
   excerptKz: string;
+  excerptEn: string | null;
   contentRu: string;
   contentKz: string;
+  contentEn: string | null;
   coverImage: string | null;
   author: string | null;
   publishedAt: Date | null;
   updatedAt: Date;
   seoTitleRu: string | null;
   seoTitleKz: string | null;
+  seoTitleEn: string | null;
   seoDescriptionRu: string | null;
   seoDescriptionKz: string | null;
+  seoDescriptionEn: string | null;
 };
 
 function plainContentSection(locale: Locale, value: string): readonly ContentSection[] {
@@ -207,20 +296,51 @@ function plainContentSection(locale: Locale, value: string): readonly ContentSec
   return [
     {
       id: "article",
-      title: locale === "ru" ? "Материал" : "Материал",
-      paragraphs: paragraphs.length > 0 ? paragraphs : [locale === "ru" ? "Материал готовится." : "Материал дайындалып жатыр."],
+      title: locale === "en" ? "Article" : locale === "ru" ? "Материал" : "Материал",
+      paragraphs: paragraphs.length > 0
+        ? paragraphs
+        : [
+            locale === "en"
+              ? "This article is being prepared."
+              : locale === "ru"
+                ? "Материал готовится."
+                : "Материал дайындалып жатыр.",
+          ],
     },
   ];
 }
 
-function recordToArticle(record: JournalRecord, locale: Locale): JournalArticle {
+function recordToArticle(record: JournalRecord, locale: Locale): JournalArticle | null {
   const staticMatch = staticArticles[locale].find((article) => article.slug === record.slug);
-  const title = locale === "ru" ? record.titleRu : record.titleKz;
-  const excerpt = locale === "ru" ? record.excerptRu : record.excerptKz;
-  const body = locale === "ru" ? record.contentRu : record.contentKz;
-  const seoTitle = locale === "ru" ? record.seoTitleRu : record.seoTitleKz;
-  const seoDescription =
-    locale === "ru" ? record.seoDescriptionRu : record.seoDescriptionKz;
+  const localized = locale === "en"
+    ? {
+        title: record.titleEn,
+        excerpt: record.excerptEn,
+        body: record.contentEn,
+        seoTitle: record.seoTitleEn,
+        seoDescription: record.seoDescriptionEn,
+      }
+    : locale === "ru"
+      ? {
+          title: record.titleRu,
+          excerpt: record.excerptRu,
+          body: record.contentRu,
+          seoTitle: record.seoTitleRu,
+          seoDescription: record.seoDescriptionRu,
+        }
+      : {
+          title: record.titleKz,
+          excerpt: record.excerptKz,
+          body: record.contentKz,
+          seoTitle: record.seoTitleKz,
+          seoDescription: record.seoDescriptionKz,
+        };
+
+  if (!localized.title || !localized.excerpt || !localized.body) {
+    return staticMatch ?? null;
+  }
+
+  const { body, excerpt, seoDescription, seoTitle, title } = localized;
 
   return {
     slug: record.slug,
@@ -253,21 +373,29 @@ export const getJournalArticles = cache(async (locale: Locale): Promise<readonly
         slug: true,
         titleRu: true,
         titleKz: true,
+        titleEn: true,
         excerptRu: true,
         excerptKz: true,
+        excerptEn: true,
         contentRu: true,
         contentKz: true,
+        contentEn: true,
         coverImage: true,
         author: true,
         publishedAt: true,
         updatedAt: true,
         seoTitleRu: true,
         seoTitleKz: true,
+        seoTitleEn: true,
         seoDescriptionRu: true,
         seoDescriptionKz: true,
+        seoDescriptionEn: true,
       },
     });
-    const databaseArticles = records.map((record) => recordToArticle(record, locale));
+    const databaseArticles = records.flatMap((record) => {
+      const article = recordToArticle(record, locale);
+      return article ? [article] : [];
+    });
     const databaseSlugs = new Set(databaseArticles.map((article) => article.slug));
     return [
       ...databaseArticles,

@@ -7,6 +7,7 @@ import { PublicBuildSetPage } from "@/components/commerce/public-build-set-page"
 import { getCommerceSettings, getDemoBundle } from "@/lib/commerce/catalog";
 import { isDemoCommerceRequested } from "@/lib/commerce/demo-gate";
 import { getPublicBundle } from "@/lib/commerce/public-catalog";
+import { commerceText } from "@/lib/commerce/locale";
 import { isLocale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,9 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     if (bundle) return { title: bundle.name, description: bundle.description ?? undefined };
   }
   return {
-    title: "Build a set",
+    title: isLocale(locale)
+      ? commerceText(locale, "Build a set", "Собрать комплект", "Жинақ құру")
+      : "Build a set",
   };
 }
 

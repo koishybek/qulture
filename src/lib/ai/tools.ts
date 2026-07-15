@@ -90,8 +90,11 @@ function localized(
   locale: AILocale,
   ru: string,
   kz: string,
+  en: string,
 ): string {
-  return locale === "kz" ? kz : ru;
+  if (locale === "kz") return kz;
+  if (locale === "en") return en;
+  return ru;
 }
 
 function result<T>(
@@ -141,6 +144,7 @@ function unavailable(
         context.locale,
         "Подтверждённые данные сейчас недоступны. Предложите передачу вопроса команде.",
         "Расталған деректер қазір қолжетімсіз. Сұрақты командаға беруді ұсыныңыз.",
+        "Confirmed information is currently unavailable. Offer to pass the question to the team.",
       ),
     },
   });
@@ -159,6 +163,7 @@ function timeoutResult(
         context.locale,
         "Проверка заняла слишком много времени. Предложите повторить или передать вопрос команде.",
         "Тексеру тым ұзаққа созылды. Қайталауды немесе сұрақты командаға беруді ұсыныңыз.",
+        "The check took too long. Offer to try again or pass the question to the team.",
       ),
     },
   });
@@ -336,6 +341,7 @@ async function runValidatedTool(
             context.locale,
             "Для использования параметров тела нужно отдельное согласие.",
             "Дене өлшемдерін пайдалану үшін бөлек келісім қажет.",
+            "Explicit consent is required to use body measurements.",
           ),
           [
             {
@@ -359,7 +365,16 @@ async function runValidatedTool(
       const input = CompareProductsInputSchema.parse(args);
       const uniqueIds = [...new Set(input.productIds)];
       if (uniqueIds.length !== input.productIds.length) {
-        return validationError(name, context, "Product IDs must be distinct.");
+        return validationError(
+          name,
+          context,
+          localized(
+            context.locale,
+            "Идентификаторы товаров должны различаться.",
+            "Өнім идентификаторлары әртүрлі болуы керек.",
+            "Product IDs must be distinct.",
+          ),
+        );
       }
       const products = await Promise.all(
         uniqueIds.map((productId) =>
@@ -472,6 +487,7 @@ async function runValidatedTool(
             context.locale,
             "Один или несколько вариантов недоступны в выбранном количестве.",
             "Бір немесе бірнеше нұсқа таңдалған мөлшерде қолжетімсіз.",
+            "One or more variants are unavailable in the selected quantity.",
           ),
         );
       }
@@ -531,6 +547,7 @@ async function runValidatedTool(
               context.locale,
               "Для проверки заказа нужны номер заказа и совпадающий email или телефон.",
               "Тапсырысты тексеру үшін тапсырыс нөмірі және сәйкес email немесе телефон қажет.",
+              "To check an order, an order number and a matching email or phone number are required.",
             ),
           },
         });
@@ -546,6 +563,7 @@ async function runValidatedTool(
               context.locale,
               "Заказ не найден или контакт не совпадает.",
               "Тапсырыс табылмады немесе байланыс дерегі сәйкес емес.",
+              "The order was not found or the contact details do not match.",
             ),
           },
         });
@@ -565,7 +583,12 @@ export async function executeAITool(
     return validationError(
       "unknown",
       context,
-      "Unknown tool name.",
+      localized(
+        context.locale,
+        "Неизвестное имя инструмента.",
+        "Құрал атауы белгісіз.",
+        "Unknown tool name.",
+      ),
       [{ path: "tool", message: "Unknown tool name." }],
     );
   }
@@ -580,6 +603,7 @@ export async function executeAITool(
         context.locale,
         "Параметры инструмента не прошли проверку.",
         "Құрал параметрлері тексеруден өтпеді.",
+        "The tool parameters did not pass validation.",
       ),
       parsed.issues,
     );
@@ -615,6 +639,7 @@ export async function executeAITool(
           context.locale,
           "Указанные данные не прошли проверку.",
           "Көрсетілген деректер тексеруден өтпеді.",
+          "The supplied data did not pass validation.",
         ),
       );
     } else if (error instanceof AIDataUnavailableError) {

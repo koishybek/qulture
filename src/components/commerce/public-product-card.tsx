@@ -9,6 +9,7 @@ import type {
   PublicCatalogLocale,
   PublicMediaView,
 } from "@/lib/commerce/public-catalog";
+import { commerceIntlLocale, commerceText } from "@/lib/commerce/locale";
 
 import { useCart } from "./cart-provider";
 
@@ -25,6 +26,7 @@ export type PublicProductCardQuickVariant = {
   id: string;
   size: string;
   color: string;
+  colorByLocale: Partial<Record<PublicCatalogLocale, string>>;
   unitPrice: number;
   availability: "in_stock" | "low_stock" | "preorder";
   eta?: string;
@@ -37,6 +39,7 @@ type PublicProductCardProps = {
   productId: string;
   slug: string;
   name: string;
+  nameByLocale: Partial<Record<PublicCatalogLocale, string>>;
   category: string;
   role: "top" | "pants" | "single";
   price: string;
@@ -90,6 +93,7 @@ export function PublicProductCard({
   productId,
   slug,
   name,
+  nameByLocale,
   category,
   role,
   price,
@@ -100,7 +104,7 @@ export function PublicProductCard({
   canSelectSize,
   quickVariants,
 }: PublicProductCardProps) {
-  const isRu = locale === "ru";
+  const t = (en: string, ru: string, kz: string) => commerceText(locale, en, ru, kz);
   const { addLines } = useCart();
   const cardMedia = media.slice(0, 2);
   const hasSecondaryMedia = cardMedia.length > 1;
@@ -175,8 +179,10 @@ export function PublicProductCard({
         variantId: variant.id,
         slug,
         name,
+        nameByLocale,
         role,
         color: variant.color,
+        colorByLocale: variant.colorByLocale,
         size: variant.size,
         quantity: 1,
         unitPrice: variant.unitPrice,
@@ -190,6 +196,7 @@ export function PublicProductCard({
           variantId: option.id,
           size: option.size,
           color: option.color,
+          colorByLocale: option.colorByLocale,
           unitPrice: option.unitPrice,
           availability: option.availability,
           eta: option.eta,
@@ -198,7 +205,7 @@ export function PublicProductCard({
         })),
       },
     ]);
-    setQuickNotice(isRu ? "Добавлено в корзину." : "Себетке қосылды.");
+    setQuickNotice(t("Added to bag.", "Добавлено в корзину.", "Себетке қосылды."));
     window.dispatchEvent(new CustomEvent("qulture:open-cart"));
   }
 
@@ -210,7 +217,7 @@ export function PublicProductCard({
       <div className="public-product-card__media">
         {cardMedia.length > 0 ? (
           <Link
-            aria-label={isRu ? `Открыть ${name}` : `${name} ашу`}
+            aria-label={t(`Open ${name}`, `Открыть ${name}`, `${name} ашу`)}
             className="public-product-card__media-link"
             href={productHref}
             onFocus={(event) => {
@@ -240,7 +247,7 @@ export function PublicProductCard({
                     src={item.src}
                   />
                   <span className="sr-only">
-                    {isRu ? "Изображение" : "Сурет"} {index + 1} / {cardMedia.length}
+                    {t("Image", "Изображение", "Сурет")} {index + 1} / {cardMedia.length}
                   </span>
                 </span>
               ))}
@@ -248,7 +255,7 @@ export function PublicProductCard({
           </Link>
         ) : (
           <span className="public-product-card__media-pending">
-            {isRu ? "МЕДИА ГОТОВИТСЯ" : "МЕДИА ДАЙЫНДАЛУДА"}
+            {t("MEDIA IN PROGRESS", "МЕДИА ГОТОВИТСЯ", "МЕДИА ДАЙЫНДАЛУДА")}
           </span>
         )}
 
@@ -277,7 +284,7 @@ export function PublicProductCard({
 
       {colors.length > 0 ? (
         <div
-          aria-label={isRu ? "Цвета" : "Түстер"}
+          aria-label={t("Colours", "Цвета", "Түстер")}
           className="public-product-card__options"
           role="list"
         >
@@ -291,7 +298,7 @@ export function PublicProductCard({
                 title={
                   color.available
                     ? color.label
-                    : `${color.label} — ${isRu ? "недоступен" : "қолжетімсіз"}`
+                    : `${color.label} — ${t("unavailable", "недоступен", "қолжетімсіз")}`
                 }
               >
                 <span
@@ -304,7 +311,7 @@ export function PublicProductCard({
                 {color.label}
                 {!color.available ? (
                   <span className="sr-only">
-                    {isRu ? "недоступен" : "қолжетімсіз"}
+                    {t("unavailable", "недоступен", "қолжетімсіз")}
                   </span>
                 ) : null}
               </span>
@@ -314,9 +321,9 @@ export function PublicProductCard({
       ) : null}
 
       <div className="public-product-card__sizes">
-        <span className="q-meta">{isRu ? "РАЗМЕР" : "ӨЛШЕМ"}</span>
+        <span className="q-meta">{t("SIZE", "РАЗМЕР", "ӨЛШЕМ")}</span>
         <span
-          aria-label={isRu ? "Доступность размеров" : "Өлшемдердің қолжетімділігі"}
+          aria-label={t("Size availability", "Доступность размеров", "Өлшемдердің қолжетімділігі")}
           role={sizes.length > 0 ? "list" : undefined}
         >
           {sizes.length > 0
@@ -329,14 +336,12 @@ export function PublicProductCard({
                   {size.label}
                   {!size.available ? (
                     <span className="sr-only">
-                      {isRu ? "недоступен" : "қолжетімсіз"}
+                      {t("unavailable", "недоступен", "қолжетімсіз")}
                     </span>
                   ) : null}
                 </span>
               ))
-            : isRu
-              ? "Уточняется"
-              : "Нақтылануда"}
+            : t("To be confirmed", "Уточняется", "Нақтылануда")}
         </span>
       </div>
 
@@ -349,16 +354,12 @@ export function PublicProductCard({
             onClick={toggleQuickView}
             type="button"
           >
-            {isRu ? "Быстрый просмотр" : "Жылдам қарау"}
+            {t("Quick view", "Быстрый просмотр", "Жылдам қарау")}
           </button>
           <Link className="public-product-card__cta" href={productHref}>
             {canSelectSize
-              ? isRu
-                ? "Выбрать размер"
-                : "Өлшемді таңдау"
-              : isRu
-                ? "Подробнее"
-                : "Толығырақ"}
+              ? t("Choose size", "Выбрать размер", "Өлшемді таңдау")
+              : t("View details", "Подробнее", "Толығырақ")}
             <span aria-hidden="true">→</span>
           </Link>
         </span>
@@ -367,9 +368,9 @@ export function PublicProductCard({
       {quickOpen ? (
         <div className="public-product-card__quick" id={quickPanelId} role="region">
           <div>
-            <strong>{isRu ? "Быстрое добавление" : "Жылдам қосу"}</strong>
+            <strong>{t("Quick add", "Быстрое добавление", "Жылдам қосу")}</strong>
             <button
-              aria-label={isRu ? "Закрыть быстрый просмотр" : "Жылдам қарауды жабу"}
+              aria-label={t("Close quick view", "Закрыть быстрый просмотр", "Жылдам қарауды жабу")}
               onClick={toggleQuickView}
               type="button"
             >
@@ -382,7 +383,7 @@ export function PublicProductCard({
                 <button key={variant.id} onClick={() => quickAdd(variant)} type="button">
                   <span>{variant.color} · {variant.size}</span>
                   <small>
-                    {new Intl.NumberFormat(locale === "ru" ? "ru-KZ" : "kk-KZ", {
+                    {new Intl.NumberFormat(commerceIntlLocale(locale), {
                       style: "currency",
                       currency: "KZT",
                       maximumFractionDigits: 0,
@@ -392,7 +393,7 @@ export function PublicProductCard({
               ))}
             </div>
           ) : (
-            <p>{isRu ? "Доступные варианты пока не опубликованы." : "Қолжетімді нұсқалар әлі жарияланбаған."}</p>
+            <p>{t("Available options have not been published yet.", "Доступные варианты пока не опубликованы.", "Қолжетімді нұсқалар әлі жарияланбаған.")}</p>
           )}
           <p aria-live="polite" className="q-status" data-kind="success">{quickNotice}</p>
         </div>

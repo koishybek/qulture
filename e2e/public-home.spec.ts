@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 import {
-  dismissConsentIfPresent,
   cleanupE2EWaitlist,
+  dismissConsentIfPresent,
   nextErrorOverlay,
   preparePublicSession,
 } from "./helpers";
@@ -10,16 +10,27 @@ import {
 test.afterAll(cleanupE2EWaitlist);
 
 test.describe("public pre-launch experience", () => {
-  test("desktop home renders the editorial pre-launch surface", {
+  test("English is the default home, including the consent surface", {
     tag: "@desktop",
   }, async ({ page }) => {
-    await preparePublicSession(page);
+    await page.goto("/");
 
-    await page.goto("/ru");
-    await dismissConsentIfPresent(page);
+    await expect(page).toHaveURL(/\/en\/?$/);
+    const consent = page.getByRole("dialog", {
+      name: "Privacy preferences",
+      exact: true,
+    });
+    await expect(consent).toBeVisible();
+    await expect(consent).toContainText(
+      "Essential cookies keep the site running. Analytics and marketing stay off until you choose otherwise.",
+    );
+    await consent
+      .getByRole("button", { name: "Reject optional cookies", exact: true })
+      .click();
+    await expect(consent).toBeHidden();
 
-    await expect(page).toHaveURL(/\/ru\/?$/);
     await expect(page).toHaveTitle(/QULTURE/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(
       page.getByRole("heading", {
         level: 1,
@@ -29,9 +40,22 @@ test.describe("public pre-launch experience", () => {
     await expect(
       page
         .locator(".home-hero__actions")
-        .getByRole("link", { name: "Смотреть систему", exact: true }),
+        .getByRole("link", { name: "Explore the system", exact: true }),
     ).toBeVisible();
-    await expect(page.locator("main")).not.toContainText("₸");
+
+    const languages = page.locator(
+      'header [role="group"][aria-label="Select language"]',
+    );
+    await expect(
+      languages.getByRole("link", { name: "English", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+    await expect(
+      languages.getByRole("link", { name: "Russian", exact: true }),
+    ).toHaveAttribute("href", "/ru");
+    await expect(
+      languages.getByRole("link", { name: "Kazakh", exact: true }),
+    ).toHaveAttribute("href", "/kz");
+    await expect(page.locator("main")).not.toContainText("Смотреть систему");
     await expect(page.locator("main")).not.toContainText("DEMO COMMERCE");
     await expect(nextErrorOverlay(page)).toHaveCount(0);
 
@@ -41,12 +65,11 @@ test.describe("public pre-launch experience", () => {
     expect(hasHorizontalOverflow).toBe(false);
   });
 
-  test("mobile home opens its primary navigation", {
+  test("mobile English home opens its primary navigation", {
     tag: "@mobile",
   }, async ({ page }) => {
     await preparePublicSession(page);
-
-    await page.goto("/ru");
+    await page.goto("/en");
     await dismissConsentIfPresent(page);
 
     await expect(
@@ -56,15 +79,15 @@ test.describe("public pre-launch experience", () => {
       }),
     ).toBeVisible();
     await page
-      .getByRole("button", { name: "Открыть меню", exact: true })
+      .getByRole("button", { name: "Open menu", exact: true })
       .click();
     const menu = page.getByRole("dialog", {
-      name: "Открыть меню",
+      name: "Navigation menu",
       exact: true,
     });
     await expect(menu).toBeVisible();
     await expect(
-      menu.getByRole("link", { name: "Технологии", exact: true }),
+      menu.getByRole("link", { name: "Technology", exact: true }),
     ).toBeVisible();
     await expect(nextErrorOverlay(page)).toHaveCount(0);
 
@@ -74,36 +97,53 @@ test.describe("public pre-launch experience", () => {
     expect(hasHorizontalOverflow).toBe(false);
   });
 
-  test("locale switch preserves the page family and changes to Kazakh", {
+  test("locale switch preserves the page family from Russian to Kazakh", {
     tag: "@desktop",
   }, async ({ page }) => {
     await preparePublicSession(page);
     await page.goto("/ru?source=e2e#city-layer-system");
-    await dismissConsentIfPresent(page);
+    await dismissConsentIfPresent(page, "ru");
 
-    const localeLink = page.getByRole("link", { name: "Қазақша", exact: true });
+    const languages = page.locator(
+      'header [role="group"][aria-label="Выбрать язык"]',
+    );
+    await expect(
+      languages.getByRole("link", { name: "Английский", exact: true }),
+    ).toBeVisible();
+    await expect(
+      languages.getByRole("link", { name: "Русский", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+    const localeLink = languages.getByRole("link", {
+      name: "Казахский",
+      exact: true,
+    });
     await expect(localeLink).toHaveAttribute(
       "href",
       "/kz?source=e2e#city-layer-system",
     );
     await expect(
-      page.locator("footer").getByRole("link", { name: "RU / KZ", exact: true }),
+      page
+        .locator('footer [role="group"][aria-label="Выбрать язык"]')
+        .getByRole("link", { name: "Казахский", exact: true }),
     ).toHaveAttribute("href", "/kz?source=e2e#city-layer-system");
     await localeLink.click();
 
     await expect(page).toHaveURL(/\/kz\?source=e2e#city-layer-system$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "kk");
     await expect(
-      page.getByText(
-        "Желге, қабаттарға және қозғалысқа арналған қалалық киім.",
-        { exact: true },
-      ),
+      page.getByRole("heading", {
+        level: 1,
+        name: "ӨЗГЕРМЕЛІ КЛИМАТҚА АРНАЛҒАН.",
+      }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Русский", exact: true }),
+      page
+        .locator('header [role="group"][aria-label="Тілді таңдау"]')
+        .getByRole("link", { name: "Орыс тілі", exact: true }),
     ).toBeVisible();
   });
 
-  test("AI quick action renders the safe offline fallback", {
+  test("English AI quick action renders the safe offline fallback", {
     tag: "@desktop",
   }, async ({ page }) => {
     await preparePublicSession(page);
@@ -114,54 +154,54 @@ test.describe("public pre-launch experience", () => {
         body: JSON.stringify({ message: "provider intentionally unavailable" }),
       });
     });
-    await page.goto("/ru");
+    await page.goto("/en");
     await dismissConsentIfPresent(page);
 
     await page
       .getByRole("button", {
-        name: "AI-консультант QULTURE",
+        name: "QULTURE Assist",
         exact: true,
       })
       .click();
     const dialog = page.getByRole("dialog", {
-      name: "AI-консультант QULTURE",
+      name: "QULTURE AI assistant",
       exact: true,
     });
     await expect(dialog).toBeVisible();
     await dialog
       .getByRole("button", {
-        name: "Помочь выбрать размер",
+        name: "Help me choose a size",
         exact: true,
       })
       .click();
 
     await expect(dialog.locator('[data-role="user"]')).toContainText(
-      "Помочь выбрать размер",
+      "Help me choose a size",
     );
     await expect(dialog.locator('[data-role="assistant"]')).toContainText(
-      "Консультант временно недоступен",
+      "The advisor is temporarily unavailable",
     );
   });
 
-  test("valid waitlist submission is acknowledged", {
+  test("valid English waitlist submission is acknowledged", {
     tag: "@desktop",
   }, async ({ page }) => {
     await preparePublicSession(page);
-    await page.goto("/ru/waitlist");
+    await page.goto("/en/waitlist");
     await dismissConsentIfPresent(page);
 
-    await page.getByLabel("Город", { exact: true }).selectOption("astana");
+    await page.getByLabel("City", { exact: true }).selectOption("astana");
     await page
-      .getByLabel("Что вас интересует", { exact: true })
+      .getByLabel("What are you interested in?", { exact: true })
       .selectOption("set");
-    await page.getByLabel("Размер", { exact: true }).selectOption("M");
-    await page.getByLabel("Имя", { exact: true }).fill("QULTURE E2E");
+    await page.getByLabel("Size", { exact: true }).selectOption("M");
+    await page.getByLabel("Name", { exact: true }).fill("QULTURE E2E");
     await page
-      .getByLabel("Email или телефон", { exact: true })
+      .getByLabel("Email or phone", { exact: true })
       .fill(`e2e-${Date.now()}@example.test`);
     await page
       .getByRole("checkbox", {
-        name: "Согласен получить сервисное уведомление о готовности",
+        name: "I agree to receive a service notification when the item is ready",
         exact: true,
       })
       .check();
@@ -173,7 +213,8 @@ test.describe("public pre-launch experience", () => {
     );
     await page
       .getByRole("button", {
-        name: /Сообщить о готовности/,
+        name: "Notify me when ready",
+        exact: true,
       })
       .click();
     const response = await responsePromise;
@@ -181,7 +222,7 @@ test.describe("public pre-launch experience", () => {
     expect(response.ok()).toBe(true);
     await expect(
       page.getByRole("status").filter({
-        hasText: "Готово. Мы сохранили ваш интерес и выбранные согласия.",
+        hasText: "Done. We saved your interest and consent choices.",
       }),
     ).toBeVisible();
   });

@@ -18,6 +18,7 @@ function variant(
     sku: id,
     colorCode,
     color: colorCode,
+    colorByLocale: { en: colorCode, ru: colorCode, kz: colorCode },
     size,
     availableUnits: canAddToCart ? 1 : 0,
     availability: canAddToCart ? "in_stock" : "unavailable",
@@ -63,6 +64,12 @@ describe("public PDP helpers", () => {
   it("builds an encoded, locale-scoped restock URL with verified IDs", () => {
     expect(restockWaitlistHref("kz", "product/1", "variant 2")).toBe(
       "/kz/waitlist?product=product%2F1&variant=variant+2&intent=restock",
+    );
+  });
+
+  it("supports an English restock URL", () => {
+    expect(restockWaitlistHref("en", "product-1", "variant-2")).toBe(
+      "/en/waitlist?product=product-1&variant=variant-2&intent=restock",
     );
   });
 });

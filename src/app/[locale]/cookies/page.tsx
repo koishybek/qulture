@@ -4,10 +4,16 @@ import { LegalPageView } from "@/components/content/content-page";
 import { CookiePreferencesButton } from "@/components/content/cookie-preferences-button";
 import { createPageMetadata } from "@/content/metadata";
 import { cookiesContent } from "@/content/policies";
-import { parseLocale } from "@/lib/i18n";
+import { parseLocale, type Locale } from "@/lib/i18n";
 import { getPublicLegalPage } from "@/lib/content/public-content";
 
 type CookiesPageProps = { params: Promise<{ locale: string }> };
+
+const cookiePreferencesLabels: Record<Locale, string> = {
+  en: "Change cookie settings",
+  ru: "Изменить настройки cookie",
+  kz: "Cookie баптауларын өзгерту",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +25,7 @@ export async function generateMetadata({ params }: CookiesPageProps): Promise<Me
 
 export default async function CookiesPage({ params }: CookiesPageProps) {
   const locale = parseLocale((await params).locale);
-  const label = locale === "ru" ? "Изменить настройки cookie" : "Cookie баптауларын өзгерту";
+  const label = cookiePreferencesLabels[locale];
   const page = await getPublicLegalPage(locale, cookiesContent[locale], ["cookies"]);
   return (
     <LegalPageView

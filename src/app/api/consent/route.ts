@@ -9,7 +9,9 @@ import { errorResponse } from "@/lib/http";
 export const runtime = "nodejs";
 
 const SUBJECT_COOKIE = "qulture_subject";
-const requestSchema = cookieConsentSchema.extend({ locale: z.enum(["ru", "kz"]).optional() });
+const requestSchema = cookieConsentSchema.extend({
+  locale: z.enum(["en", "ru", "kz"]).optional(),
+});
 
 export async function POST(request: Request) {
   try {
@@ -33,7 +35,7 @@ export async function POST(request: Request) {
           name: "COOKIE_CONSENT_UPDATED",
           consentCategory: "NECESSARY",
           anonymousId: subjectId,
-          language: input.locale === "kz" ? "KZ" : "RU",
+          language: input.locale === "en" ? "EN" : input.locale === "kz" ? "KZ" : "RU",
           payload: { analytics: input.analytics, marketing: input.marketing, policyVersion: input.policyVersion },
         },
       }),

@@ -10,7 +10,7 @@ export const checkoutLineSchema = z.object({
 });
 
 export const demoOrderRequestSchema = z.object({
-  locale: z.enum(["ru", "kz"]),
+  locale: z.enum(["en", "ru", "kz"]),
   idempotencyKey: trimmed(8, 200).optional(),
   customer: z.object({
     name: trimmed(2, 100),

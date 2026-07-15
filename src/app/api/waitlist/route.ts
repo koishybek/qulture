@@ -29,7 +29,7 @@ const browserWaitlistSchema = z.object({
   restockConsent: z.boolean().default(false),
   marketingConsent: z.boolean().default(false),
   policyVersion: z.string().trim().min(1).max(80),
-  locale: z.enum(["ru", "kz"]),
+  locale: z.enum(["en", "ru", "kz"]),
   source: z.string().trim().min(1).max(80).default("website"),
 });
 
@@ -81,7 +81,12 @@ export async function POST(request: Request) {
       restockConsent: browserInput.intent === "restock" && browserInput.restockConsent,
       marketingConsent: browserInput.marketingConsent,
       policyVersion,
-      language: browserInput.locale === "ru" ? "RU" : "KZ",
+      language:
+        browserInput.locale === "en"
+          ? "EN"
+          : browserInput.locale === "ru"
+            ? "RU"
+            : "KZ",
       source: `${browserInput.source}:${browserInput.interest ?? "general"}`.slice(0, 120),
     });
 

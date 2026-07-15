@@ -90,6 +90,48 @@ describe("AI service fallback and language behavior", () => {
     expect(observedRequest?.instructions).toContain("Тек қазақ тілінде жауап бер");
   });
 
+  it("returns a structured English answer without falling back to Russian instructions", async () => {
+    let observedRequest: AIProviderRequest | undefined;
+    const provider = {
+      createResponse: vi.fn(async (providerRequest: AIProviderRequest) => {
+        observedRequest = providerRequest;
+        return {
+          id: "response-en-test",
+          output: [{ type: "message" }],
+          outputText: "",
+          outputParsed: {
+            answer: "I will check the confirmed information.",
+            actions: [
+              {
+                kind: "ask",
+                label: "Choose a product",
+                value: "Which product would you like to explore?",
+              },
+            ],
+          },
+          requestId: "request-en-test",
+        };
+      }),
+    };
+
+    const result = await runAIConversation(
+      { ...request, locale: "en", message: "What products are available?" },
+      {
+        correlationId: "correlation-en-provider",
+        env: { OPENAI_KEY: "test-only-key" },
+        provider,
+        persistence: false,
+      },
+    );
+
+    expect(result.status).toBe("success");
+    expect(result.message).toBe("I will check the confirmed information.");
+    expect(observedRequest?.instructions).toContain("Reply only in English");
+    expect(observedRequest?.input).toContainEqual(
+      expect.objectContaining({ content: expect.stringContaining("Interface context") }),
+    );
+  });
+
   it("preserves model output and returns standardized function results in a bounded tool loop", async () => {
     const requests: AIProviderRequest[] = [];
     const provider = {

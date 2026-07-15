@@ -11,25 +11,26 @@ import {
 
 describe("locale parsing", () => {
   it("accepts published locale codes independent of input casing", () => {
+    expect(tryParseLocale(" en ")).toBe("en");
     expect(tryParseLocale(" ru ")).toBe("ru");
     expect(tryParseLocale("KZ")).toBe("kz");
   });
 
-  it("rejects planned and unknown locale codes until they are published", () => {
-    expect(tryParseLocale("en")).toBeNull();
+  it("rejects unknown locale codes", () => {
     expect(tryParseLocale("de")).toBeNull();
     expect(tryParseLocale(undefined)).toBeNull();
   });
 
-  it("uses Russian as the safe fallback", () => {
-    expect(parseLocale("unknown")).toBe("ru");
+  it("uses English as the safe fallback", () => {
+    expect(parseLocale("unknown")).toBe("en");
     expect(localeFromPath("/kz/technology")).toBe("kz");
-    expect(localeFromPath("/journal")).toBe("ru");
+    expect(localeFromPath("/journal")).toBe("en");
   });
 });
 
 describe("localized path handling", () => {
   it("adds and replaces only the leading locale segment", () => {
+    expect(localizePath("en", "/technology")).toBe("/en/technology");
     expect(localizePath("ru", "/technology")).toBe("/ru/technology");
     expect(localizePath("kz", "/ru/journal/building-qulture-openly")).toBe(
       "/kz/journal/building-qulture-openly",

@@ -9,28 +9,60 @@ import {
   useEffect,
   useState,
 } from "react";
+import { locales, replaceLocaleInPath, type Locale } from "@/lib/i18n";
 
 type LocaleSwitchLinkProps = {
-  locale: "ru" | "kz";
-  children: ReactNode;
+  locale: Locale;
+  targetLocale: Locale;
+  children?: ReactNode;
   className?: string;
   ariaLabel?: string;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
 };
 
-function switchPath(pathname: string, locale: "ru" | "kz"): string {
-  const target = locale === "ru" ? "kz" : "ru";
-  const localized = pathname.replace(/^\/(ru|kz)(?=\/|$)/, `/${target}`);
-  return localized === pathname ? `/${target}` : localized;
-}
+type LocaleSwitcherProps = {
+  locale: Locale;
+  className?: string;
+  ariaLabel: string;
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
+};
+
+const languageNames: Record<Locale | "en", string> = {
+  en: "English",
+  ru: "Русский",
+  kz: "Қазақша",
+};
+
+const languageNamesByLocale: Record<Locale, Record<Locale, string>> = {
+  en: {
+    en: "English",
+    ru: "Russian",
+    kz: "Kazakh",
+  },
+  ru: {
+    en: "Английский",
+    ru: "Русский",
+    kz: "Казахский",
+  },
+  kz: {
+    en: "Ағылшын тілі",
+    ru: "Орыс тілі",
+    kz: "Қазақша",
+  },
+};
 
 function ResolvedLocaleSwitchLink({
   ariaLabel,
   children,
   className,
+  currentLocale,
   hrefBase,
   onClick,
-}: Omit<LocaleSwitchLinkProps, "locale"> & { hrefBase: string }) {
+  targetLocale,
+}: Omit<LocaleSwitchLinkProps, "locale"> & {
+  currentLocale: Locale;
+  hrefBase: string;
+}) {
   const searchParams = useSearchParams();
   const [hash, setHash] = useState("");
   const query = searchParams.toString();
@@ -45,33 +77,64 @@ function ResolvedLocaleSwitchLink({
   const href = `${hrefBase}${query ? `?${query}` : ""}${hash}`;
   return (
     <Link
+      aria-current={currentLocale === targetLocale ? "page" : undefined}
       aria-label={ariaLabel}
       className={className}
       href={href}
       onClick={onClick}
     >
-      {children}
+      {children ?? targetLocale.toUpperCase()}
     </Link>
   );
 }
 
-export function LocaleSwitchLink(props: LocaleSwitchLinkProps) {
+/**
+ * A single locale link that retains the current page, search string, and hash.
+ */
+export function LocaleSwitchLink({ locale, targetLocale, ...props }: LocaleSwitchLinkProps) {
   const pathname = usePathname();
-  const hrefBase = switchPath(pathname, props.locale);
+  const hrefBase = replaceLocaleInPath(pathname, targetLocale);
   const fallback = (
     <Link
+      aria-current={locale === targetLocale ? "page" : undefined}
       aria-label={props.ariaLabel}
       className={props.className}
       href={hrefBase}
       onClick={props.onClick}
     >
-      {props.children}
+      {props.children ?? targetLocale.toUpperCase()}
     </Link>
   );
 
   return (
     <Suspense fallback={fallback}>
-      <ResolvedLocaleSwitchLink {...props} hrefBase={hrefBase} />
+      <ResolvedLocaleSwitchLink
+        {...props}
+        currentLocale={locale}
+        hrefBase={hrefBase}
+        targetLocale={targetLocale}
+      />
     </Suspense>
+  );
+}
+
+/**
+ * Compact EN / RU / KZ selector used in the site chrome.
+ */
+export function LocaleSwitcher({ ariaLabel, className, locale, onClick }: LocaleSwitcherProps) {
+  return (
+    <div aria-label={ariaLabel} className={className} role="group">
+      {locales.map((targetLocale, index) => (
+        <LocaleSwitchLink
+          key={targetLocale}
+          ariaLabel={languageNamesByLocale[locale][targetLocale] ?? languageNames[targetLocale]}
+          locale={locale}
+          onClick={onClick}
+          targetLocale={targetLocale}
+        >
+          {targetLocale.toUpperCase()}{index < locales.length - 1 ? <span aria-hidden="true">/</span> : null}
+        </LocaleSwitchLink>
+      ))}
+    </div>
   );
 }

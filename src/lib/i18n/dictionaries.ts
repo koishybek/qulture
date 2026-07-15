@@ -114,6 +114,113 @@ type DictionaryShape<T> = {
 
 export type SiteDictionary = DictionaryShape<typeof ruDictionary>;
 
+const enDictionary = {
+  common: {
+    brand: "QULTURE",
+    skipToContent: "Skip to content",
+    readMore: "Read more",
+    backToJournal: "Back to journal",
+    statusPrelaunch: "Pre-launch",
+    inDevelopment: "In development",
+    draft: "Draft",
+    updated: "Updated",
+    minutes: "min read",
+    learnMore: "Learn more",
+    openMenu: "Open menu",
+    close: "Close",
+  },
+  nav: {
+    home: "Home",
+    shop: "Shop",
+    technology: "Technology",
+    journal: "Journal",
+    about: "About",
+    aiAssist: "QULTURE Assist",
+    search: "Search",
+    account: "Account",
+    bag: "Bag",
+    waitlist: "Waitlist",
+    delivery: "Delivery & returns",
+    faq: "FAQ",
+    privacy: "Privacy",
+    terms: "Terms",
+    cookies: "Cookie settings",
+    consent: "Consent",
+    contacts: "Contacts",
+    language: "Language",
+  },
+  home: {
+    hero: {
+      eyebrow: "QULTURE / CENTRAL ASIA",
+      title: "Designed for changing climates.",
+      subtitle: "Urban clothing for wind, layers and movement.",
+      primaryCta: "Explore the system",
+      secondaryCta: "Ask QULTURE AI",
+    },
+    cityLayer: {
+      eyebrow: "City layer system",
+      title: "Top and trousers, together or separately",
+      copy:
+        "We build a city set as a system: every component has to work on its own, while top and bottom sizes remain independently selectable.",
+      itemTop: "Top",
+      itemBottom: "Trousers",
+      itemSet: "Set",
+      note: "Final specifications, sizing and prices are published only after verification and approval.",
+    },
+    scenarios: {
+      eyebrow: "Scenarios",
+      title: "From street to inside, without unnecessary complexity",
+      copy:
+        "Fit and layering are developed around an actual city route. Specific scenarios are published only after fit and material validation.",
+      solo: "Solo layer",
+      base: "With a base layer",
+      outer: "Under outerwear",
+    },
+    proof: {
+      eyebrow: "Verification before claims",
+      title: "Data first, then statements",
+      copy:
+        "Before publishing product properties, the team verifies measurements, fit, composition, care and suitable wear scenarios.",
+      measurements: "Garment measurements by size",
+      fit: "Fit testing across proportions",
+      material: "Approved material data",
+    },
+    ai: {
+      eyebrow: "QULTURE Assist",
+      title: "Product answers without guesswork",
+      copy:
+        "The assistant explains layers, fit and launch status. If confirmed information is unavailable, it says so and can pass a question to the team.",
+      cta: "Open the assistant",
+    },
+    brand: {
+      eyebrow: "Designed in Astana",
+      title: "Clothing shaped by observing the city",
+      copy:
+        "QULTURE is designed in Astana for routes where wind, transport, street and interior can all change within one day.",
+      cta: "About QULTURE",
+    },
+    journal: {
+      eyebrow: "Progress journal",
+      title: "What is decided, and what is still being verified",
+      copy:
+        "Notes on product development, the digital system and the principles used to validate future specifications.",
+      cta: "View journal",
+    },
+    waitlist: {
+      eyebrow: "Launch updates",
+      title: "Get confirmed information first",
+      copy:
+        "Leave a contact only for the update type you choose. The waitlist never implies automatic marketing consent.",
+      cta: "Leave a contact",
+    },
+    footer: {
+      note: "QULTURE is in development. Prices, availability and launch timing have not been published yet.",
+      legal: "Documents and data settings",
+      support: "Information and support",
+    },
+  },
+} as const satisfies SiteDictionary;
+
 const kzDictionary = {
   common: {
     brand: "QULTURE",
@@ -223,6 +330,7 @@ const kzDictionary = {
 } as const satisfies SiteDictionary;
 
 const dictionaries: Record<Locale, SiteDictionary> = {
+  en: enDictionary,
   ru: ruDictionary,
   kz: kzDictionary,
 };

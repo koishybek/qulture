@@ -18,7 +18,7 @@ const nullablePhone = z
   .trim()
   .regex(/^\+?[0-9 ()-]{7,24}$/)
   .nullable();
-const localeSchema = z.enum(["ru", "kz", "kk"]).transform((locale) =>
+const localeSchema = z.enum(["ru", "kz", "kk", "en"]).transform((locale) =>
   locale === "kk" ? "kz" : locale,
 );
 

@@ -1,13 +1,14 @@
-export const locales = ["ru", "kz"] as const;
+export const locales = ["en", "ru", "kz"] as const;
 
-export const plannedLocales = ["ru", "kz", "en"] as const;
+export const plannedLocales = ["en", "ru", "kz"] as const;
 
 export type Locale = (typeof locales)[number];
 export type PlannedLocale = (typeof plannedLocales)[number];
 
-export const defaultLocale: Locale = "ru";
+export const defaultLocale: Locale = "en";
 
 export const localeNames: Record<Locale, string> = {
+  en: "English",
   ru: "Русский",
   kz: "Қазақша",
 };

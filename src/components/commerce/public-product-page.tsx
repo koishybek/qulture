@@ -28,6 +28,7 @@ import {
   restockWaitlistHref,
   variantForColor,
 } from "@/lib/commerce/public-pdp";
+import { commerceIntlLocale, commerceText } from "@/lib/commerce/locale";
 
 import { useCart } from "./cart-provider";
 
@@ -66,7 +67,7 @@ function formatMoney(
   locale: PublicCatalogLocale,
 ): string {
   try {
-    return new Intl.NumberFormat(locale === "ru" ? "ru-KZ" : "kk-KZ", {
+    return new Intl.NumberFormat(commerceIntlLocale(locale), {
       style: "currency",
       currency,
       maximumFractionDigits: 0,
@@ -79,7 +80,7 @@ function formatMoney(
 function formatDate(value: string, locale: PublicCatalogLocale): string | null {
   const date = new Date(value);
   if (Number.isNaN(date.valueOf())) return null;
-  return new Intl.DateTimeFormat(locale === "ru" ? "ru-KZ" : "kk-KZ", {
+  return new Intl.DateTimeFormat(commerceIntlLocale(locale), {
     dateStyle: "long",
     timeZone: "UTC",
   }).format(date);
@@ -95,13 +96,19 @@ function availabilityText(
     preorder: "Доступно по предзаказу",
     unavailable: "Нет в наличии",
   };
+  const en = {
+    in_stock: "In stock",
+    low_stock: "Low stock",
+    preorder: "Available to pre-order",
+    unavailable: "Out of stock",
+  };
   const kz = {
     in_stock: "Қолда бар",
     low_stock: "Аз қалды",
     preorder: "Алдын ала тапсырысқа қолжетімді",
     unavailable: "Қолда жоқ",
   };
-  return (locale === "ru" ? ru : kz)[availability];
+  return (locale === "en" ? en : locale === "ru" ? ru : kz)[availability];
 }
 
 function cartAvailability(variant: PublicVariantView) {
@@ -168,7 +175,7 @@ export function PublicProductPage({
   paymentEnabled?: boolean;
   product: PublicProductView;
 }) {
-  const isRu = locale === "ru";
+  const t = (en: string, ru: string, kz: string) => commerceText(locale, en, ru, kz);
   const { addLines } = useCart();
   const [selectedId, setSelectedId] = useState(() => initialVariant(product));
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
@@ -274,6 +281,7 @@ export function PublicProductPage({
             variantId: variant.id,
             size: variant.size,
             color: variant.color,
+            colorByLocale: variant.colorByLocale,
             unitPrice: variant.priceMinor,
             availability: cartAvailability(variant),
             eta: variant.incomingEta ?? product.preorderEta ?? undefined,
@@ -289,8 +297,10 @@ export function PublicProductPage({
           variantId: selected.id,
           slug: product.slug,
           name: product.name,
+          nameByLocale: product.nameByLocale,
           role: product.role,
           color: selected.color,
+          colorByLocale: selected.colorByLocale,
           size: selected.size,
           quantity: boundedQuantity,
           unitPrice: selected.priceMinor,
@@ -303,9 +313,7 @@ export function PublicProductPage({
           variantOptions,
         },
       ]);
-      setNotice(
-        isRu ? "Товар добавлен в корзину." : "Тауар себетке қосылды.",
-      );
+      setNotice(t("Item added to bag.", "Товар добавлен в корзину.", "Тауар себетке қосылды."));
       if (openCart) {
         window.dispatchEvent(new CustomEvent("qulture:open-cart"));
       }
@@ -338,9 +346,11 @@ export function PublicProductPage({
     entryPoint: "pdp_size",
     productId: product.id,
     productSlug: product.slug,
-    prompt: isRu
-      ? `Помоги выбрать размер ${product.name}. Сначала уточни необходимые параметры и сценарий посадки; не угадывай.`
-      : `${product.name} үшін өлшем таңдауға көмектес. Алдымен қажетті параметрлер мен қоным сценарийін нақтыла; болжама.`,
+    prompt: t(
+      `Help choose a size for ${product.name}. First ask for the necessary measurements and fit context; do not guess.`,
+      `Помоги выбрать размер ${product.name}. Сначала уточни необходимые параметры и сценарий посадки; не угадывай.`,
+      `${product.name} үшін өлшем таңдауға көмектес. Алдымен қажетті параметрлер мен қоным сценарийін нақтыла; болжама.`,
+    ),
     selectedColor: selected?.color,
     selectedSize: selected?.size,
     selectedVariantId: selected?.id,
@@ -349,9 +359,11 @@ export function PublicProductPage({
     entryPoint: "pdp_climate",
     productId: product.id,
     productSlug: product.slug,
-    prompt: isRu
-      ? `Помоги оценить ${product.name} для моего климата и маршрута. Сначала спроси город, сезон, транспорт и время на улице; используй только подтверждённые данные товара.`
-      : `${product.name} моделін менің климатым мен бағытыма бағалауға көмектес. Алдымен қала, маусым, көлік және сыртта болатын уақытты сұра; тек расталған тауар деректерін пайдалан.`,
+    prompt: t(
+      `Help assess ${product.name} for my climate and route. First ask for city, season, transport and time outside; use confirmed product information only.`,
+      `Помоги оценить ${product.name} для моего климата и маршрута. Сначала спроси город, сезон, транспорт и время на улице; используй только подтверждённые данные товара.`,
+      `${product.name} моделін менің климатым мен бағытыма бағалауға көмектес. Алдымен қала, маусым, көлік және сыртта болатын уақытты сұра; тек расталған тауар деректерін пайдалан.`,
+    ),
     selectedColor: selected?.color,
     selectedSize: selected?.size,
     selectedVariantId: selected?.id,
@@ -386,8 +398,8 @@ export function PublicProductPage({
           {gallery.length > 0 ? (
             <>
               <div
-                aria-label={isRu ? "Галерея товара" : "Тауар галереясы"}
-                aria-roledescription={isRu ? "карусель" : "карусель"}
+                aria-label={t("Product gallery", "Галерея товара", "Тауар галереясы")}
+                aria-roledescription={t("carousel", "карусель", "карусель")}
                 className="public-pdp__gallery-track"
                 onScroll={handleGalleryScroll}
                 ref={galleryTrackRef}
@@ -407,31 +419,27 @@ export function PublicProductPage({
                 ))}
               </div>
               <button
-                aria-label={
-                  isRu
-                    ? "Увеличить текущее изображение"
-                    : "Ағымдағы суретті үлкейту"
-                }
+                aria-label={t("Enlarge current image", "Увеличить текущее изображение", "Ағымдағы суретті үлкейту")}
                 className="public-pdp__zoom-trigger"
                 onClick={() => setZoomOpen(true)}
                 ref={zoomTriggerRef}
                 type="button"
               >
                 <span aria-hidden="true">＋</span>
-                {isRu ? "УВЕЛИЧИТЬ" : "ҮЛКЕЙТУ"}
+                {t("ENLARGE", "УВЕЛИЧИТЬ", "ҮЛКЕЙТУ")}
               </button>
               <p aria-live="polite" className="sr-only">
-                {isRu ? "Изображение" : "Сурет"} {activeMediaIndex + 1} / {gallery.length}
+                {t("Image", "Изображение", "Сурет")} {activeMediaIndex + 1} / {gallery.length}
               </p>
               {gallery.length > 1 ? (
                 <div
-                  aria-label={isRu ? "Миниатюры товара" : "Тауар нобайлары"}
+                  aria-label={t("Product thumbnails", "Миниатюры товара", "Тауар нобайлары")}
                   className="public-pdp__thumbnails"
                   role="navigation"
                 >
                   {gallery.map((item, index) => (
                     <button
-                      aria-label={`${isRu ? "Показать изображение" : "Суретті көрсету"} ${index + 1}`}
+                      aria-label={`${t("Show image", "Показать изображение", "Суретті көрсету")} ${index + 1}`}
                       aria-pressed={activeMediaIndex === index}
                       key={item.src}
                       onClick={() => scrollToMedia(index)}
@@ -452,16 +460,16 @@ export function PublicProductPage({
             <div className="public-pdp__media-pending" role="status">
               <span>QULTURE / MEDIA</span>
               <strong>
-                {isRu ? "Медиа готовится" : "Медиа дайындалуда"}
+                {t("Media in progress", "Медиа готовится", "Медиа дайындалуда")}
               </strong>
             </div>
           )}
         </div>
 
         <aside className="public-pdp__purchase">
-          <nav aria-label={isRu ? "Навигация" : "Навигация"} className="public-pdp__breadcrumbs">
+          <nav aria-label={t("Navigation", "Навигация", "Навигация")} className="public-pdp__breadcrumbs">
             <Link href={`/${locale}/shop`}>
-              {isRu ? "Каталог" : "Каталог"}
+              {t("Shop", "Каталог", "Каталог")}
             </Link>
             <span aria-hidden="true">/</span>
             <span>{product.category}</span>
@@ -473,7 +481,7 @@ export function PublicProductPage({
             <p>{product.description}</p>
             <div className="public-pdp__price">
               <strong>
-                {price ?? (isRu ? "Цена уточняется" : "Бағасы нақтылануда")}
+                {price ?? t("Price on request", "Цена уточняется", "Бағасы нақтылануда")}
               </strong>
               {selected?.comparePriceMinor ? (
                 <s>
@@ -490,7 +498,7 @@ export function PublicProductPage({
           {colors.length > 0 ? (
             <fieldset className="public-pdp__option-group">
               <legend>
-                {isRu ? "Цвет" : "Түс"}
+                {t("Colour", "Цвет", "Түс")}
                 {selected ? <strong>{selected.color}</strong> : null}
               </legend>
               <div className="public-pdp__colors">
@@ -531,7 +539,7 @@ export function PublicProductPage({
           {variantsForColor.length > 0 ? (
             <fieldset className="public-pdp__option-group">
               <legend>
-                {isRu ? "Размер" : "Өлшем"}
+                {t("Size", "Размер", "Өлшем")}
                 {selected ? <strong>{selected.size}</strong> : null}
               </legend>
               <div className="public-pdp__sizes">
@@ -558,9 +566,7 @@ export function PublicProductPage({
             </fieldset>
           ) : (
             <p className="q-status" data-kind="error" role="status">
-              {isRu
-                ? "Варианты товара пока не опубликованы."
-                : "Тауар нұсқалары әзірге жарияланбаған."}
+              {t("Product options have not been published yet.", "Варианты товара пока не опубликованы.", "Тауар нұсқалары әзірге жарияланбаған.")}
             </p>
           )}
 
@@ -573,14 +579,12 @@ export function PublicProductPage({
               <strong>
                 {selected
                   ? availabilityText(selected.availability, locale)
-                  : isRu
-                    ? "Вариант не выбран"
-                    : "Нұсқа таңдалмаған"}
+                  : t("No option selected", "Вариант не выбран", "Нұсқа таңдалмаған")}
               </strong>
               {etaLabel
-                ? `${isRu ? "Ожидаемая дата" : "Күтілетін күн"}: ${etaLabel}`
+                ? `${t("Expected date", "Ожидаемая дата", "Күтілетін күн")}: ${etaLabel}`
                 : selected?.leadTimeDays
-                  ? `${isRu ? "Срок подготовки" : "Дайындау мерзімі"}: ${selected.leadTimeDays} ${isRu ? "дн." : "күн"}`
+                  ? `${t("Preparation time", "Срок подготовки", "Дайындау мерзімі")}: ${selected.leadTimeDays} ${t("days", "дн.", "күн")}`
                   : null}
             </p>
           </div>
@@ -588,11 +592,11 @@ export function PublicProductPage({
           <div className="public-pdp__ai-actions">
             <button onClick={() => openSizeAssistant()} type="button">
               <span>AI</span>
-              {isRu ? "Помочь с размером" : "Өлшемге көмектесу"}
+              {t("Help with size", "Помочь с размером", "Өлшемге көмектесу")}
             </button>
             <button onClick={() => openClimateAssistant()} type="button">
               <span>AI</span>
-              {isRu ? "Проверить сценарий климата" : "Климат сценарийін тексеру"}
+              {t("Check climate scenario", "Проверить сценарий климата", "Климат сценарийін тексеру")}
             </button>
           </div>
 
@@ -601,7 +605,7 @@ export function PublicProductPage({
               className="q-button q-button--solid public-pdp__restock"
               href={restockWaitlistHref(locale, product.id, selected.id)}
             >
-              {isRu ? "Сообщить о поступлении" : "Қайта түскенде хабарлау"}
+              {t("Notify me on restock", "Сообщить о поступлении", "Қайта түскенде хабарлау")}
               <span aria-hidden="true">→</span>
             </Link>
           ) : (
@@ -612,12 +616,8 @@ export function PublicProductPage({
               type="button"
             >
               {selected?.availability === "preorder"
-                ? isRu
-                  ? "Добавить предзаказ"
-                  : "Алдын ала тапсырысты қосу"
-                : isRu
-                  ? "Добавить в корзину"
-                  : "Себетке қосу"}
+                ? t("Add pre-order", "Добавить предзаказ", "Алдын ала тапсырысты қосу")
+                : t("Add to bag", "Добавить в корзину", "Себетке қосу")}
               <span aria-hidden="true">→</span>
             </button>
           )}
@@ -625,12 +625,8 @@ export function PublicProductPage({
           {!canAdd && selected?.availability !== "unavailable" ? (
             <p className="q-status" data-kind="error">
               {selected?.priceMinor === null || product.currency !== "KZT"
-                ? isRu
-                  ? "Покупка станет доступна после публикации цены."
-                  : "Баға жарияланғаннан кейін сатып алуға болады."
-                : isRu
-                  ? "Выбранный вариант сейчас нельзя добавить в корзину."
-                  : "Таңдалған нұсқаны қазір себетке қосу мүмкін емес."}
+                ? t("Purchase becomes available after the price is published.", "Покупка станет доступна после публикации цены.", "Баға жарияланғаннан кейін сатып алуға болады.")
+                : t("The selected option cannot be added to the bag right now.", "Выбранный вариант сейчас нельзя добавить в корзину.", "Таңдалған нұсқаны қазір себетке қосу мүмкін емес.")}
             </p>
           ) : null}
           <p aria-live="polite" className="q-status" data-kind="success">
@@ -641,33 +637,25 @@ export function PublicProductPage({
             <article>
               <span>01</span>
               <div>
-                <strong>{isRu ? "Оплата" : "Төлем"}</strong>
+                <strong>{t("Payment", "Оплата", "Төлем")}</strong>
                 <p>
                   {paymentEnabled
-                    ? isRu
-                      ? "Доступные способы будут показаны до подтверждения заказа."
-                      : "Қолжетімді тәсілдер тапсырыс расталғанға дейін көрсетіледі."
-                    : isRu
-                      ? "Production-оплата ещё не подключена. Добавление в корзину не списывает деньги."
-                      : "Production төлемі әлі қосылмаған. Себетке қосқанда ақша алынбайды."}
+                    ? t("Available methods are shown before order confirmation.", "Доступные способы будут показаны до подтверждения заказа.", "Қолжетімді тәсілдер тапсырыс расталғанға дейін көрсетіледі.")
+                    : t("Production payment is not connected yet. Adding to bag never charges money.", "Production-оплата ещё не подключена. Добавление в корзину не списывает деньги.", "Production төлемі әлі қосылмаған. Себетке қосқанда ақша алынбайды.")}
                 </p>
               </div>
             </article>
             <article>
               <span>02</span>
               <div>
-                <strong>{isRu ? "Доставка" : "Жеткізу"}</strong>
+                <strong>{t("Delivery", "Доставка", "Жеткізу")}</strong>
                 <p>
                   {deliveryEnabled
-                    ? isRu
-                      ? "Способ, срок и стоимость будут показаны до подтверждения заказа."
-                      : "Тәсіл, мерзім және құны тапсырыс расталғанға дейін көрсетіледі."
-                    : isRu
-                      ? "Production-доставка ещё не подключена. Актуальная политика опубликована отдельно."
-                      : "Production жеткізуі әлі қосылмаған. Өзекті саясат бөлек жарияланған."}
+                    ? t("Method, timing and cost are shown before order confirmation.", "Способ, срок и стоимость будут показаны до подтверждения заказа.", "Тәсіл, мерзім және құны тапсырыс расталғанға дейін көрсетіледі.")
+                    : t("Production delivery is not connected yet. The current policy is published separately.", "Production-доставка ещё не подключена. Актуальная политика опубликована отдельно.", "Production жеткізуі әлі қосылмаған. Өзекті саясат бөлек жарияланған.")}
                 </p>
                 <Link href={`/${locale}/delivery-and-returns`}>
-                  {isRu ? "Условия доставки и возврата" : "Жеткізу және қайтару шарттары"}
+                  {t("Delivery and returns", "Условия доставки и возврата", "Жеткізу және қайтару шарттары")}
                 </Link>
               </div>
             </article>
@@ -678,8 +666,8 @@ export function PublicProductPage({
               className="public-pdp__set-link"
               href={`/${locale}/build-a-set?bundle=${encodeURIComponent(product.buildSetSlug)}`}
             >
-              <span>{isRu ? "МОДУЛЬНАЯ СИСТЕМА" : "МОДУЛЬДІК ЖҮЙЕ"}</span>
-              <strong>{isRu ? "Собрать комплект" : "Жинақ құру"}</strong>
+              <span>{t("MODULAR SYSTEM", "МОДУЛЬНАЯ СИСТЕМА", "МОДУЛЬДІК ЖҮЙЕ")}</span>
+              <strong>{t("Build a set", "Собрать комплект", "Жинақ құру")}</strong>
               <span aria-hidden="true">→</span>
             </Link>
           ) : null}
@@ -692,13 +680,13 @@ export function PublicProductPage({
 
       {product.technologyTags.length > 0 || product.care ? (
         <section
-          aria-label={isRu ? "Информация о товаре" : "Тауар туралы ақпарат"}
+          aria-label={t("Product information", "Информация о товаре", "Тауар туралы ақпарат")}
           className="public-pdp__merchandising"
         >
           {product.technologyTags.length > 0 ? (
             <article>
-              <p className="q-meta">01 / {isRu ? "ТЕХНОЛОГИИ" : "ТЕХНОЛОГИЯЛАР"}</p>
-              <h2>{isRu ? "Опубликованные свойства" : "Жарияланған қасиеттер"}</h2>
+              <p className="q-meta">01 / {t("TECHNOLOGY", "ТЕХНОЛОГИИ", "ТЕХНОЛОГИЯЛАР")}</p>
+              <h2>{t("Published properties", "Опубликованные свойства", "Жарияланған қасиеттер")}</h2>
               <ul>
                 {product.technologyTags.map((tag) => (
                   <li key={tag}>{tag}</li>
@@ -708,8 +696,8 @@ export function PublicProductPage({
           ) : null}
           {product.care ? (
             <article>
-              <p className="q-meta">02 / {isRu ? "УХОД" : "КҮТІМ"}</p>
-              <h2>{isRu ? "Как ухаживать" : "Күтім жасау"}</h2>
+              <p className="q-meta">02 / {t("CARE", "УХОД", "КҮТІМ")}</p>
+              <h2>{t("Care guidance", "Как ухаживать", "Күтім жасау")}</h2>
               <p>{product.care}</p>
             </article>
           ) : null}
@@ -730,7 +718,7 @@ export function PublicProductPage({
           <div className="public-pdp-zoom__head">
             <h2 id="public-pdp-zoom-title">{product.name}</h2>
             <button
-              aria-label={isRu ? "Закрыть изображение" : "Суретті жабу"}
+              aria-label={t("Close image", "Закрыть изображение", "Суретті жабу")}
               onClick={closeZoom}
               type="button"
             >
@@ -753,7 +741,7 @@ export function PublicProductPage({
                 onClick={() => setActiveMediaIndex((index) => Math.max(0, index - 1))}
                 type="button"
               >
-                ← {isRu ? "Назад" : "Артқа"}
+                ← {t("Back", "Назад", "Артқа")}
               </button>
               <span>{activeMediaIndex + 1} / {gallery.length}</span>
               <button
@@ -765,7 +753,7 @@ export function PublicProductPage({
                 }
                 type="button"
               >
-                {isRu ? "Далее" : "Келесі"} →
+                {t("Next", "Далее", "Келесі")} →
               </button>
             </div>
           ) : null}

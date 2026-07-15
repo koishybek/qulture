@@ -1,8 +1,14 @@
 import { cache } from "react";
 
 import { db } from "@/lib/db";
+import {
+  commerceTextMap,
+  isUnlocalizedEnglish,
+  localizedCommerceText,
+  type CommerceLocale,
+} from "@/lib/commerce/locale";
 
-export type PublicCatalogLocale = "ru" | "kz";
+export type PublicCatalogLocale = CommerceLocale;
 
 export type PublicMediaView = {
   src: string;
@@ -21,6 +27,7 @@ export type PublicVariantView = {
   size: string;
   colorCode: string;
   color: string;
+  colorByLocale: Record<PublicCatalogLocale, string>;
   availableUnits: number;
   availability: PublicAvailability;
   priceMinor: number | null;
@@ -35,6 +42,7 @@ export type PublicProductView = {
   id: string;
   slug: string;
   name: string;
+  nameByLocale: Record<PublicCatalogLocale, string>;
   description: string;
   category: string;
   role: "top" | "pants" | "single";
@@ -98,8 +106,10 @@ type ProductRecord = {
   slug: string;
   nameRu: string;
   nameKz: string;
+  nameEn: string | null;
   descriptionRu: string;
   descriptionKz: string;
+  descriptionEn: string | null;
   category: string;
   priceMinor: number | null;
   comparePriceMinor: number | null;
@@ -110,6 +120,7 @@ type ProductRecord = {
   technologyTags: unknown;
   careRu: string | null;
   careKz: string | null;
+  careEn: string | null;
   bundleComponents?: Array<{ bundle: { slug: string } }>;
   variants: VariantRecord[];
 };
@@ -121,6 +132,7 @@ type VariantRecord = {
   colorCode: string;
   colorNameRu: string;
   colorNameKz: string;
+  colorNameEn: string | null;
   stock: number;
   reservedStock: number;
   priceMinor: number | null;
@@ -156,18 +168,21 @@ const activeProductQuery = {
 
 function localized(
   locale: PublicCatalogLocale,
-  ru: string,
-  kz: string,
+  en: string | null | undefined,
+  ru: string | null | undefined,
+  kz: string | null | undefined,
+  englishFallback: string,
 ): string {
-  return locale === "kz" ? kz : ru;
+  return localizedCommerceText(locale, { en, ru, kz }, englishFallback);
 }
 
 function optionalLocalized(
   locale: PublicCatalogLocale,
-  ru: string | null,
-  kz: string | null,
+  en: string | null | undefined,
+  ru: string | null | undefined,
+  kz: string | null | undefined,
 ): string | null {
-  const value = locale === "kz" ? kz : ru;
+  const value = locale === "en" ? en : locale === "ru" ? ru : kz;
   return value?.trim() || null;
 }
 
@@ -202,7 +217,11 @@ function mediaAlt(
   locale: PublicCatalogLocale,
   fallbackAlt: string,
 ): string {
-  const localizedAlt = locale === "kz" ? item.altKz : item.altRu;
+  const localizedAlt = locale === "en"
+    ? item.altEn
+    : locale === "kz"
+      ? item.altKz
+      : item.altRu;
   if (typeof localizedAlt === "string" && localizedAlt.trim()) {
     return localizedAlt.trim();
   }
@@ -210,7 +229,8 @@ function mediaAlt(
     const fromMap = (item.alt as Record<string, unknown>)[locale];
     if (typeof fromMap === "string" && fromMap.trim()) return fromMap.trim();
   }
-  return typeof item.alt === "string" && item.alt.trim()
+  // A legacy unscoped alt value might be Russian. Never surface it in English.
+  return locale !== "en" && typeof item.alt === "string" && item.alt.trim()
     ? item.alt.trim()
     : fallbackAlt;
 }
@@ -260,12 +280,12 @@ export function parsePublicMedia(
   return parsed;
 }
 
-function stringList(value: unknown): string[] {
+function stringList(value: unknown, locale: PublicCatalogLocale): string[] {
   if (!Array.isArray(value)) return [];
   return value
     .filter((item): item is string => typeof item === "string")
     .map((item) => item.trim())
-    .filter(Boolean)
+    .filter((item) => Boolean(item) && (locale !== "en" || !isUnlocalizedEnglish(item)))
     .slice(0, 12);
 }
 
@@ -313,7 +333,11 @@ function toPublicProduct(
   product: ProductRecord,
   locale: PublicCatalogLocale,
 ): PublicProductView {
-  const name = localized(locale, product.nameRu, product.nameKz);
+  const nameByLocale = commerceTextMap(
+    { en: product.nameEn, ru: product.nameRu, kz: product.nameKz },
+    "QULTURE product",
+  );
+  const name = nameByLocale[locale];
   const variants = product.variants.map<PublicVariantView>((variant) => {
     const availableUnits = Math.max(0, variant.stock - variant.reservedStock);
     const priceMinor = effectivePrice(product.priceMinor, variant.priceMinor);
@@ -327,7 +351,17 @@ function toPublicProduct(
       sku: variant.sku,
       size: variant.sizeLabel,
       colorCode: variant.colorCode,
-      color: localized(locale, variant.colorNameRu, variant.colorNameKz),
+      color: localized(
+        locale,
+        variant.colorNameEn,
+        variant.colorNameRu,
+        variant.colorNameKz,
+        "QULTURE colour",
+      ),
+      colorByLocale: commerceTextMap(
+        { en: variant.colorNameEn, ru: variant.colorNameRu, kz: variant.colorNameKz },
+        "QULTURE colour",
+      ),
       availableUnits,
       availability: state,
       priceMinor,
@@ -363,10 +397,13 @@ function toPublicProduct(
     id: product.id,
     slug: product.slug,
     name,
+    nameByLocale,
     description: localized(
       locale,
+      product.descriptionEn,
       product.descriptionRu,
       product.descriptionKz,
+      "English product details will be published soon.",
     ),
     category: product.category,
     role: productRole(product.category),
@@ -382,8 +419,8 @@ function toPublicProduct(
     isPreorder: product.isPreorder,
     preorderEta: product.preorderEta?.toISOString() ?? null,
     media: parsePublicMedia(product.media, locale, name),
-    technologyTags: stringList(product.technologyTags),
-    care: optionalLocalized(locale, product.careRu, product.careKz),
+    technologyTags: stringList(product.technologyTags, locale),
+    care: optionalLocalized(locale, product.careEn, product.careRu, product.careKz),
     buildSetSlug: product.bundleComponents?.[0]?.bundle.slug ?? null,
     variants,
     hasPurchasableVariant: variants.some((variant) => variant.canAddToCart),
@@ -395,19 +432,28 @@ function toCollectionSummary(
     slug: string;
     nameRu: string;
     nameKz: string;
+    nameEn: string | null;
     descriptionRu: string | null;
     descriptionKz: string | null;
+    descriptionEn: string | null;
     heroMedia: unknown;
     products: Array<{ id: string }>;
   },
   locale: PublicCatalogLocale,
 ): PublicCollectionSummary {
-  const name = localized(locale, collection.nameRu, collection.nameKz);
+  const name = localized(
+    locale,
+    collection.nameEn,
+    collection.nameRu,
+    collection.nameKz,
+    "QULTURE collection",
+  );
   return {
     slug: collection.slug,
     name,
     description: optionalLocalized(
       locale,
+      collection.descriptionEn,
       collection.descriptionRu,
       collection.descriptionKz,
     ),
@@ -422,8 +468,10 @@ function toPublicBundle(
     slug: string;
     nameRu: string;
     nameKz: string;
+    nameEn: string | null;
     descriptionRu: string | null;
     descriptionKz: string | null;
+    descriptionEn: string | null;
     currency: string;
     discountType: "PERCENTAGE" | "FIXED";
     discountValue: number;
@@ -453,13 +501,20 @@ function toPublicBundle(
   ) {
     return null;
   }
-  const name = localized(locale, bundle.nameRu, bundle.nameKz);
+  const name = localized(
+    locale,
+    bundle.nameEn,
+    bundle.nameRu,
+    bundle.nameKz,
+    "QULTURE set",
+  );
   return {
     id: bundle.id,
     slug: bundle.slug,
     name,
     description: optionalLocalized(
       locale,
+      bundle.descriptionEn,
       bundle.descriptionRu,
       bundle.descriptionKz,
     ),

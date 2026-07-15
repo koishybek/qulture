@@ -20,14 +20,14 @@ export async function loadAdminDashboard() {
     db.siteSettings.findUnique({ where: { id: "default" } }),
     db.product.findMany({ include: { variants: { orderBy: [{ colorCode: "asc" }, { sizeLabel: "asc" }] }, collections: true }, orderBy: { updatedAt: "desc" } }),
     db.bundle.findMany({ include: { components: { include: { product: true }, orderBy: { sortOrder: "asc" } } }, orderBy: { updatedAt: "desc" } }),
-    db.collection.findMany({ include: { _count: { select: { products: true } } }, orderBy: [{ sortOrder: "asc" }, { nameRu: "asc" }] }),
+    db.collection.findMany({ include: { _count: { select: { products: true } } }, orderBy: [{ sortOrder: "asc" }, { nameEn: "asc" }] }),
     db.sizeProfile.findMany({ include: { rules: { orderBy: { version: "desc" } } }, orderBy: { updatedAt: "desc" } }),
     db.knowledgeItem.findMany({ orderBy: { updatedAt: "desc" }, take: 100 }),
     db.journalArticle.findMany({ orderBy: { updatedAt: "desc" }, take: 100 }),
     db.translation.findMany({ orderBy: [{ namespace: "asc" }, { key: "asc" }, { locale: "asc" }], take: 500 }),
     db.contentPage.findMany({ orderBy: [{ slug: "asc" }, { locale: "asc" }], take: 200 }),
-    db.waitlistLead.findMany({ include: { product: { select: { slug: true, nameRu: true } }, variant: { select: { sku: true } } }, orderBy: { createdAt: "desc" }, take: 250 }),
-    db.handoffTicket.findMany({ include: { product: { select: { slug: true, nameRu: true } } }, orderBy: { createdAt: "desc" }, take: 250 }),
+    db.waitlistLead.findMany({ include: { product: { select: { slug: true, nameEn: true, nameRu: true } }, variant: { select: { sku: true } } }, orderBy: { createdAt: "desc" }, take: 250 }),
+    db.handoffTicket.findMany({ include: { product: { select: { slug: true, nameEn: true, nameRu: true } } }, orderBy: { createdAt: "desc" }, take: 250 }),
     db.conversation.findMany({
       where: { status: "ACTIVE", handoffs: { none: {} } },
       select: {

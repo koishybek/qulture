@@ -4,6 +4,7 @@ import { FormEvent, useId, useRef, useState } from "react";
 import Link from "next/link";
 
 import { trackEvent } from "@/lib/analytics/client";
+import type { AILocale } from "@/lib/ai/types";
 
 type HandoffContext = {
   productId?: string;
@@ -15,7 +16,7 @@ type HandoffFormProps = {
   conversationId?: string;
   defaultQuestion: string;
   defaultSummary?: string;
-  locale: "ru" | "kz";
+  locale: AILocale;
   measurementConsent: boolean;
   policyVersion: string;
   captureEnabled: boolean;
@@ -25,6 +26,7 @@ type HandoffFormProps = {
 
 const copy = {
   ru: {
+    eyebrow: "QULTURE / ПЕРЕДАЧА ЧЕЛОВЕКУ",
     title: "Передать вопрос команде",
     intro: "Команда получит вопрос и выбранный способ связи. Маркетинговая подписка не включается.",
     reason: "Тема",
@@ -53,6 +55,7 @@ const copy = {
     unavailable: "Сбор контактов временно отключён до утверждения политики.",
   },
   kz: {
+    eyebrow: "QULTURE / КОМАНДАҒА БЕРУ",
     title: "Сұрақты командаға жіберу",
     intro: "Команда сұрақты және таңдаған байланыс тәсілін алады. Маркетингтік жазылым қосылмайды.",
     reason: "Тақырып",
@@ -79,6 +82,35 @@ const copy = {
     error: "Сұрақты жіберу мүмкін болмады. Байланысты тексеріп, қайталаңыз.",
     policyChanged: "Саясат нұсқасы өзгерді. Бетті жаңартып, қайта оқыңыз.",
     unavailable: "Саясат бекітілгенге дейін байланыс деректерін жинау уақытша өшірілді.",
+  },
+  en: {
+    eyebrow: "QULTURE / HUMAN HANDOFF",
+    title: "Pass your question to the team",
+    intro: "The team will receive your question and chosen contact method. This does not subscribe you to marketing.",
+    reason: "Topic",
+    reasons: {
+      user_request: "I want to speak with the team",
+      product_question: "Product question",
+      size_help: "Sizing help",
+      order_help: "Order question",
+      technical_error: "Technical issue",
+    },
+    question: "Your question",
+    name: "Name (optional)",
+    email: "Email",
+    phone: "Phone",
+    contactHint: "Enter an email address or phone number.",
+    consent: "I agree to receive a service reply to this question using the contact details provided.",
+    policy: "Policy version",
+    privacy: "Privacy",
+    consentPage: "Consent",
+    submit: "Send question",
+    pending: "Sending…",
+    cancel: "Back to conversation",
+    success: "Your question was sent to the team. You can ask for an update through this conversation.",
+    error: "We could not send your question. Check your contact details and try again.",
+    policyChanged: "The policy version changed. Refresh the page and review it again.",
+    unavailable: "Contact collection is temporarily disabled until the policy is approved.",
   },
 } as const;
 
@@ -133,6 +165,7 @@ export function HandoffForm({
         headers: {
           "Content-Type": "application/json",
           "Idempotency-Key": idempotencyKey,
+          "X-QULTURE-Locale": locale,
         },
         body: JSON.stringify({
           conversationId: conversationId ?? null,
@@ -172,7 +205,7 @@ export function HandoffForm({
 
   return (
     <section className="ai-handoff" aria-labelledby={`${id}-title`}>
-      <p className="q-meta">QULTURE / HUMAN HANDOFF</p>
+      <p className="q-meta">{text.eyebrow}</p>
       <h3 id={`${id}-title`}>{text.title}</h3>
       <p>{text.intro}</p>
       <form className="ai-handoff__form" onSubmit={submit}>

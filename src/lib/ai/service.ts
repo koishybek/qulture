@@ -149,9 +149,13 @@ function buildInterfaceContext(request: AIRequest): string {
     entryPoint: context.entryPoint ?? null,
     measurementConsent: context.measurementConsent === true,
   };
-  return request.locale === "kz"
-    ? `Интерфейс контексті (бұл өнім фактілерінің көзі емес): ${JSON.stringify(safeContext)}\n\nПайдаланушы сұрағы:\n${request.message}`
-    : `Контекст интерфейса (это не источник фактов о товаре): ${JSON.stringify(safeContext)}\n\nВопрос пользователя:\n${request.message}`;
+  if (request.locale === "kz") {
+    return `Интерфейс контексті (бұл өнім фактілерінің көзі емес): ${JSON.stringify(safeContext)}\n\nПайдаланушы сұрағы:\n${request.message}`;
+  }
+  if (request.locale === "en") {
+    return `Interface context (this is not a source of product facts): ${JSON.stringify(safeContext)}\n\nUser question:\n${request.message}`;
+  }
+  return `Контекст интерфейса (это не источник фактов о товаре): ${JSON.stringify(safeContext)}\n\nВопрос пользователя:\n${request.message}`;
 }
 
 function offlineResult(

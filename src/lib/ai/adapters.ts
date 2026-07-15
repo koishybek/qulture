@@ -34,16 +34,29 @@ type ConversationContext = {
   measurementConsent?: boolean;
 };
 
-function localeValue(locale: AILocale): "RU" | "KZ" {
-  return locale === "kz" ? "KZ" : "RU";
+function localeValue(locale: AILocale): "RU" | "KZ" | "EN" {
+  if (locale === "kz") return "KZ";
+  if (locale === "en") return "EN";
+  return "RU";
 }
 
 function localized(
   locale: AILocale,
   ru: string,
   kz: string,
-): string {
+  en: string | null | undefined,
+): string | null {
+  if (locale === "en") {
+    const value = en?.trim();
+    return value || null;
+  }
   return locale === "kz" ? kz : ru;
+}
+
+function localeTag(locale: AILocale): "ru-RU" | "kk-KZ" | "en-US" {
+  if (locale === "kz") return "kk-KZ";
+  if (locale === "en") return "en-US";
+  return "ru-RU";
 }
 
 function iso(value: Date | null | undefined): string | null {
@@ -116,30 +129,52 @@ export const defaultAIDataAdapter: ToolDataAdapter = {
 
       if (!product) return null;
 
+      const name = localized(locale, product.nameRu, product.nameKz, product.nameEn);
+      const description = localized(
+        locale,
+        product.descriptionRu,
+        product.descriptionKz,
+        product.descriptionEn,
+      );
+      // English product data must be complete enough to be shown as facts. Do
+      // not silently expose Russian copy when an English record is missing.
+      if (!name || !description) return null;
+
+      const variants: PublicProduct["variants"] = [];
+      for (const variant of product.variants) {
+        const colorName = localized(
+          locale,
+          variant.colorNameRu,
+          variant.colorNameKz,
+          variant.colorNameEn,
+        );
+        if (!colorName) return null;
+
+        const availableQuantity = Math.max(0, variant.stock - variant.reservedStock);
+        variants.push({
+          id: variant.id,
+          colorCode: variant.colorCode,
+          colorName,
+          size: variant.sizeLabel,
+          available: availableQuantity > 0,
+          price: publicPrice(
+            variant.priceMinor ?? product.priceMinor,
+            product.currency,
+          ),
+        });
+      }
+
       return {
         id: product.id,
         slug: product.slug,
-        name: localized(locale, product.nameRu, product.nameKz),
-        description: localized(locale, product.descriptionRu, product.descriptionKz),
+        name,
+        description,
         category: product.category,
         price: publicPrice(product.priceMinor, product.currency),
         comparePrice: publicPrice(product.comparePriceMinor, product.currency),
         isPreorder: product.isPreorder,
         preorderEta: iso(product.preorderEta),
-        variants: product.variants.map((variant) => {
-          const availableQuantity = Math.max(0, variant.stock - variant.reservedStock);
-          return {
-            id: variant.id,
-            colorCode: variant.colorCode,
-            colorName: localized(locale, variant.colorNameRu, variant.colorNameKz),
-            size: variant.sizeLabel,
-            available: availableQuantity > 0,
-            price: publicPrice(
-              variant.priceMinor ?? product.priceMinor,
-              product.currency,
-            ),
-          };
-        }),
+        variants,
       };
     } catch {
       throw new AIDataUnavailableError();
@@ -168,6 +203,7 @@ export const defaultAIDataAdapter: ToolDataAdapter = {
                   { colorCode: color },
                   { colorNameRu: color },
                   { colorNameKz: color },
+                  { colorNameEn: color },
                 ],
               }
             : {}),
@@ -176,20 +212,32 @@ export const defaultAIDataAdapter: ToolDataAdapter = {
         orderBy: [{ colorCode: "asc" }, { sizeLabel: "asc" }],
       });
 
-      return variants.map((variant) => {
+      const stock: StockItem[] = [];
+      for (const variant of variants) {
+        const colorName = localized(
+          locale,
+          variant.colorNameRu,
+          variant.colorNameKz,
+          variant.colorNameEn,
+        );
+        // The caller receives no unlocalized stock rows, so a model cannot
+        // turn a missing English label into Russian UI copy.
+        if (!colorName) continue;
+
         const availableQuantity = Math.max(0, variant.stock - variant.reservedStock);
-        return {
+        stock.push({
           variantId: variant.id,
           productId: variant.productId,
           colorCode: variant.colorCode,
-          colorName: localized(locale, variant.colorNameRu, variant.colorNameKz),
+          colorName,
           size: variant.sizeLabel,
           available: availableQuantity > 0,
           availableQuantity,
           incomingEta: iso(variant.incomingEta),
           leadTimeDays: variant.leadTimeDays,
-        };
-      });
+        });
+      }
+      return stock;
     } catch (error) {
       if (error instanceof AIDataUnavailableError) throw error;
       throw new AIDataUnavailableError();
@@ -258,16 +306,15 @@ export const defaultAIDataAdapter: ToolDataAdapter = {
         take: 80,
       });
 
+      const languageTag = localeTag(locale);
       const terms = query
-        .toLocaleLowerCase(locale === "kz" ? "kk-KZ" : "ru-RU")
+        .toLocaleLowerCase(languageTag)
         .split(/\s+/)
         .filter((term) => term.length > 1);
 
       return items
         .map((item) => {
-          const haystack = `${item.title} ${item.content}`.toLocaleLowerCase(
-            locale === "kz" ? "kk-KZ" : "ru-RU",
-          );
+          const haystack = `${item.title} ${item.content}`.toLocaleLowerCase(languageTag);
           const termScore = terms.reduce(
             (score, term) => score + (haystack.includes(term) ? 1 : 0),
             0,
@@ -354,7 +401,9 @@ export const defaultAIDataAdapter: ToolDataAdapter = {
           restockConsent: input.restockConsent === true,
           marketingConsent: input.marketingConsent === true,
           policyVersion,
-          language: input.locale === "kz" ? "KZ" : "RU",
+          language: localeValue(
+            input.locale === "kz" || input.locale === "en" ? input.locale : "ru",
+          ),
           source: String(input.source),
           dedupKey,
         },

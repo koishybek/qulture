@@ -1,5 +1,10 @@
 import { db } from "@/lib/db";
 import { cache } from "react";
+import {
+  commerceTextMap,
+  localizedCommerceText,
+  type CommerceLocale,
+} from "@/lib/commerce/locale";
 
 export type DemoVariantView = {
   id: string;
@@ -8,12 +13,14 @@ export type DemoVariantView = {
   stock: number;
   available: number;
   color: string;
+  colorByLocale: Record<CommerceLocale, string>;
 };
 
 export type DemoProductView = {
   id: string;
   slug: string;
   name: string;
+  nameByLocale: Record<CommerceLocale, string>;
   description: string;
   category: "TOP" | "BOTTOM" | string;
   price: number;
@@ -31,25 +38,39 @@ export type DemoBundleView = {
 };
 
 function productName(
-  product: { nameRu: string; nameKz: string },
-  locale: "ru" | "kz",
+  product: { nameEn: string | null; nameRu: string; nameKz: string },
+  locale: CommerceLocale,
 ): string {
-  return locale === "kz" ? product.nameKz : product.nameRu;
+  return localizedCommerceText(
+    locale,
+    { en: product.nameEn, ru: product.nameRu, kz: product.nameKz },
+    "QULTURE demo product",
+  );
 }
 
 function productDescription(
-  product: { descriptionRu: string; descriptionKz: string },
-  locale: "ru" | "kz",
+  product: {
+    descriptionEn: string | null;
+    descriptionRu: string;
+    descriptionKz: string;
+  },
+  locale: CommerceLocale,
 ): string {
-  return locale === "kz" ? product.descriptionKz : product.descriptionRu;
+  return localizedCommerceText(
+    locale,
+    { en: product.descriptionEn, ru: product.descriptionRu, kz: product.descriptionKz },
+    "Demo data for interface verification only. This is not a public product.",
+  );
 }
 
 function toDemoProduct(
   product: {
     id: string;
     slug: string;
+    nameEn: string | null;
     nameRu: string;
     nameKz: string;
+    descriptionEn: string | null;
     descriptionRu: string;
     descriptionKz: string;
     category: string;
@@ -63,9 +84,10 @@ function toDemoProduct(
       reservedStock: number;
       colorNameRu: string;
       colorNameKz: string;
+      colorNameEn: string | null;
     }>;
   },
-  locale: "ru" | "kz",
+  locale: CommerceLocale,
 ): DemoProductView {
   if (product.priceMinor === null || product.currency !== "KZT") {
     throw new Error(`Invalid demo price fixture: ${product.slug}`);
@@ -75,6 +97,10 @@ function toDemoProduct(
     id: product.id,
     slug: product.slug,
     name: productName(product, locale),
+    nameByLocale: commerceTextMap(
+      { en: product.nameEn, ru: product.nameRu, kz: product.nameKz },
+      "QULTURE demo product",
+    ),
     description: productDescription(product, locale),
     category: product.category,
     price: product.priceMinor,
@@ -85,7 +111,15 @@ function toDemoProduct(
       sku: variant.sku,
       stock: variant.stock,
       available: Math.max(0, variant.stock - variant.reservedStock),
-      color: locale === "kz" ? variant.colorNameKz : variant.colorNameRu,
+      color: localizedCommerceText(
+        locale,
+        { en: variant.colorNameEn, ru: variant.colorNameRu, kz: variant.colorNameKz },
+        "Demo graphite",
+      ),
+      colorByLocale: commerceTextMap(
+        { en: variant.colorNameEn, ru: variant.colorNameRu, kz: variant.colorNameKz },
+        "Demo graphite",
+      ),
     })),
   };
 }
@@ -110,7 +144,7 @@ export const getCommerceSettings = cache(async function getCommerceSettings() {
 });
 
 export async function getDemoProducts(
-  locale: "ru" | "kz",
+  locale: CommerceLocale,
 ): Promise<DemoProductView[]> {
   const products = await db.product.findMany({
     where: { isDemo: true, status: "DRAFT" },
@@ -123,7 +157,7 @@ export async function getDemoProducts(
 
 export async function getDemoProduct(
   slug: string,
-  locale: "ru" | "kz",
+  locale: CommerceLocale,
 ): Promise<DemoProductView | null> {
   const product = await db.product.findFirst({
     where: { slug, isDemo: true, status: "DRAFT" },
@@ -135,7 +169,7 @@ export async function getDemoProduct(
 
 export async function getDemoCollection(
   slug: string,
-  locale: "ru" | "kz",
+  locale: CommerceLocale,
 ): Promise<{
   slug: string;
   name: string;
@@ -156,15 +190,26 @@ export async function getDemoCollection(
 
   return {
     slug: collection.slug,
-    name: locale === "kz" ? collection.nameKz : collection.nameRu,
-    description:
-      (locale === "kz" ? collection.descriptionKz : collection.descriptionRu) ?? "",
+    name: localizedCommerceText(
+      locale,
+      { en: collection.nameEn, ru: collection.nameRu, kz: collection.nameKz },
+      "QULTURE demo collection",
+    ),
+    description: localizedCommerceText(
+      locale,
+      {
+        en: collection.descriptionEn,
+        ru: collection.descriptionRu,
+        kz: collection.descriptionKz,
+      },
+      "Demo data for interface verification only.",
+    ),
     products: collection.products.map((product) => toDemoProduct(product, locale)),
   };
 }
 
 export async function getDemoBundle(
-  locale: "ru" | "kz",
+  locale: CommerceLocale,
 ): Promise<DemoBundleView | null> {
   const bundle = await db.bundle.findFirst({
     where: { isDemo: true, status: "DRAFT" },
@@ -186,9 +231,16 @@ export async function getDemoBundle(
   return {
     id: bundle.id,
     slug: bundle.slug,
-    name: locale === "kz" ? bundle.nameKz : bundle.nameRu,
-    description:
-      (locale === "kz" ? bundle.descriptionKz : bundle.descriptionRu) ?? "",
+    name: localizedCommerceText(
+      locale,
+      { en: bundle.nameEn, ru: bundle.nameRu, kz: bundle.nameKz },
+      "QULTURE demo set",
+    ),
+    description: localizedCommerceText(
+      locale,
+      { en: bundle.descriptionEn, ru: bundle.descriptionRu, kz: bundle.descriptionKz },
+      "Demo data for interface verification only.",
+    ),
     discountPercent,
     products: bundle.components.map((component) => ({
       ...toDemoProduct(component.product, locale),

@@ -1,4 +1,5 @@
 import type { AIAction } from "@/lib/ai/schemas";
+import type { AILocale } from "@/lib/ai/types";
 
 export type ConfirmCartItem = {
   productId: string;
@@ -30,7 +31,7 @@ function parsedObject(value: string): Record<string, unknown> | null {
   }
 }
 
-function productSlug(value: string, locale: "ru" | "kz"): string | null {
+function productSlug(value: string, locale: AILocale): string | null {
   const trimmed = value.trim();
   const parsed = parsedObject(trimmed);
   const candidate = typeof parsed?.slug === "string" ? parsed.slug.trim() : trimmed;
@@ -83,7 +84,7 @@ function cartItems(value: string): ConfirmCartItem[] | null {
  */
 export function resolveAIAction(
   action: AIAction,
-  locale: "ru" | "kz",
+  locale: AILocale,
 ): ResolvedAIAction {
   switch (action.kind) {
     case "ask":

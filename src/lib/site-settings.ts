@@ -1,12 +1,16 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { defaultLocale, type Locale } from "@/lib/i18n/config";
 
 export const getSiteSettings = cache(async () => {
   return db.siteSettings.findUnique({ where: { id: "default" } });
 });
 
-export function publicDefaultLocale(value: unknown): "ru" | "kz" {
-  return value === "KZ" ? "kz" : "ru";
+export function publicDefaultLocale(value: unknown): Locale {
+  const normalized = typeof value === "string" ? value.trim().toUpperCase() : "";
+  if (normalized === "RU") return "ru";
+  if (normalized === "KZ") return "kz";
+  return defaultLocale;
 }
 
 export function jsonObject(value: unknown): Record<string, unknown> {
@@ -15,7 +19,7 @@ export function jsonObject(value: unknown): Record<string, unknown> {
     : {};
 }
 
-export function localizedSettings(value: unknown, locale: "ru" | "kz") {
+export function localizedSettings(value: unknown, locale: Locale) {
   return jsonObject(jsonObject(value)[locale]);
 }
 

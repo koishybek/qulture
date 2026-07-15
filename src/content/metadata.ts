@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { localizePath, type Locale } from "@/lib/i18n";
+import { locales, localizePath, type Locale } from "@/lib/i18n";
 import { absoluteSiteUrl, configuredSiteOrigin } from "@/lib/site-origin";
 import type { PageSeo } from "./types";
 
@@ -14,34 +14,50 @@ type MetadataOptions = {
 };
 
 const openGraphLocales: Record<Locale, string> = {
+  en: "en_US",
   ru: "ru_KZ",
   kz: "kk_KZ",
 };
+
+function localizedLanguageAlternates(origin: string | null, path: string) {
+  const english = absoluteSiteUrl(origin, localizePath("en", path));
+  const russian = absoluteSiteUrl(origin, localizePath("ru", path));
+  const kazakh = absoluteSiteUrl(origin, localizePath("kz", path));
+
+  if (!english || !russian || !kazakh) return null;
+
+  return {
+    en: english,
+    ru: russian,
+    kk: kazakh,
+    "x-default": english,
+  };
+}
 
 export function createPageMetadata(locale: Locale, options: MetadataOptions): Metadata {
   const origin = configuredSiteOrigin();
   const canonicalPath = localizePath(locale, options.path);
   const canonical = absoluteSiteUrl(origin, canonicalPath);
-  const alternateLocale: Locale = locale === "ru" ? "kz" : "ru";
+  const languageAlternates = localizedLanguageAlternates(origin, options.path);
+  const alternateOpenGraphLocales = locales
+    .filter((candidate) => candidate !== locale)
+    .map((candidate) => openGraphLocales[candidate]);
   const baseOpenGraph = {
     title: options.seo.title,
     description: options.seo.description,
     ...(canonical ? { url: canonical } : {}),
     locale: openGraphLocales[locale],
-    alternateLocale: [openGraphLocales[alternateLocale]],
+    alternateLocale: alternateOpenGraphLocales,
   };
 
   return {
     title: options.seo.title,
     description: options.seo.description,
-    ...(canonical
+    ...(canonical && languageAlternates
       ? {
           alternates: {
             canonical,
-            languages: {
-              ru: absoluteSiteUrl(origin, localizePath("ru", options.path))!,
-              kk: absoluteSiteUrl(origin, localizePath("kz", options.path))!,
-            },
+            languages: languageAlternates,
           },
         }
       : {}),

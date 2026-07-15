@@ -4,6 +4,7 @@ import type { Prisma } from "@generated/prisma/client";
 
 import { db } from "@/lib/db";
 import { fingerprintRequest, IdempotencyConflictError } from "@/lib/domain/idempotency";
+import { localizedCommerceText } from "@/lib/commerce/locale";
 
 import {
   DemoOrderValidationError,
@@ -106,12 +107,26 @@ async function resolveServerPricing(input: DemoOrderRequest) {
       {
         id: variant.id,
         productId: variant.productId,
-        productName:
-          input.locale === "kz" ? variant.product.nameKz : variant.product.nameRu,
+        productName: localizedCommerceText(
+          input.locale,
+          {
+            en: variant.product.nameEn,
+            ru: variant.product.nameRu,
+            kz: variant.product.nameKz,
+          },
+          "QULTURE demo product",
+        ),
         category: variant.product.category,
         sku: variant.sku,
-        color:
-          input.locale === "kz" ? variant.colorNameKz : variant.colorNameRu,
+        color: localizedCommerceText(
+          input.locale,
+          {
+            en: variant.colorNameEn,
+            ru: variant.colorNameRu,
+            kz: variant.colorNameKz,
+          },
+          "Demo graphite",
+        ),
         size: variant.sizeLabel,
         available: Math.max(0, variant.stock - variant.reservedStock),
         unitPriceMinor,
@@ -218,7 +233,7 @@ export async function createDemoOrder(
         paymentMethod: input.paymentMethod,
         paymentProvider: payment.provider,
         paymentReference: payment.reference,
-        language: input.locale === "kz" ? "KZ" : "RU",
+        language: input.locale === "en" ? "EN" : input.locale === "kz" ? "KZ" : "RU",
         consentPolicyVersion:
           settings?.consentPolicyVersion ?? "2026-07-draft",
         termsAcceptedAt: new Date(),

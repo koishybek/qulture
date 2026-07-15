@@ -29,9 +29,10 @@ import {
   type AIClientMessage,
 } from "@/lib/ai/client-state";
 import { AIActionSchema, type AIAction } from "@/lib/ai/schemas";
+import type { AILocale } from "@/lib/ai/types";
 
 type AIPanelProps = {
-  locale: "ru" | "kz";
+  locale: AILocale;
   teaserDelay?: number;
   teaserEnabled?: boolean;
   teaserFrequency?: string;
@@ -64,6 +65,8 @@ const panelCopy = {
     handoffRecorded: "Вопрос передан команде.",
     measurementConsent: "Согласен использовать и сохранять отправленные мной параметры тела для подбора размера в этом диалоге.",
     measurementNote: "Без этого согласия параметры не сохраняются и точный size tool по ним не запускается.",
+    you: "Вы",
+    assistLabel: "ПОМОЩНИК",
   },
   kz: {
     title: "QULTURE AI-кеңесшісі",
@@ -86,6 +89,32 @@ const panelCopy = {
     handoffRecorded: "Сұрақ командаға жіберілді.",
     measurementConsent: "Осы диалогта өлшем таңдау үшін өзім жіберген дене параметрлерін қолдануға және сақтауға келісемін.",
     measurementNote: "Бұл келісімсіз параметрлер сақталмайды және олар бойынша нақты size tool іске қосылмайды.",
+    you: "Сіз",
+    assistLabel: "КӨМЕКШІ",
+  },
+  en: {
+    title: "QULTURE AI assistant",
+    intro: "I can help with product systems, sizing, and wearing scenarios. I use confirmed information only.",
+    quick: [
+      "Help me choose a size",
+      "What works for my climate?",
+      "Compare the set and individual pieces",
+      "Build an outfit",
+      "Availability and delivery",
+      "Speak with the team",
+    ],
+    placeholder: "Ask a question…",
+    send: "Send",
+    close: "Close assistant",
+    teaser: "How can I help?",
+    error: "The advisor is temporarily unavailable. You can leave a question for the team.",
+    actionUnavailable: "I can’t safely complete that action. Open the product or pass the question to the team.",
+    cartConfirmed: "The selected item was added to your bag after your confirmation.",
+    handoffRecorded: "Your question was sent to the team.",
+    measurementConsent: "I agree to use and store the body measurements I provide to help choose a size in this conversation.",
+    measurementNote: "Without this consent, measurements are not stored and the precise size tool cannot use them.",
+    you: "You",
+    assistLabel: "ASSIST",
   },
 } as const;
 
@@ -111,7 +140,7 @@ function localDay(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
-function sessionId(locale: "ru" | "kz"): string {
+function sessionId(locale: AILocale): string {
   const key = `${SESSION_ID_PREFIX}:${locale}`;
   try {
     const existing = sessionStorage.getItem(key);
@@ -139,9 +168,12 @@ export function AIPanel({
   quickActions,
 }: AIPanelProps) {
   const text = panelCopy[locale];
-  const initialActions: readonly string[] = quickActions?.length
-    ? quickActions
-    : text.quick;
+  // Site settings currently store one unscoped list. Do not let a Russian
+  // admin value become an accidental fallback in the English experience.
+  const usesDefaultQuickActions = locale === "en" || !quickActions?.length;
+  const initialActions: readonly string[] = usesDefaultQuickActions
+    ? text.quick
+    : quickActions ?? text.quick;
   const pathname = usePathname();
   const checkoutPage = pathname.includes("/checkout");
   const router = useRouter();
@@ -201,12 +233,12 @@ export function AIPanel({
     try {
       sessionStorage.setItem(
         storageKey,
-        serializeAIClientState({ conversationId, measurementConsent, messages }),
+        serializeAIClientState({ conversationId, measurementConsent, messages }, locale),
       );
     } catch {
       // Session persistence is best-effort; the live assistant remains usable.
     }
-  }, [conversationId, loadedStorageKey, measurementConsent, messages, storageKey]);
+  }, [conversationId, loadedStorageKey, locale, measurementConsent, messages, storageKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -371,7 +403,10 @@ export function AIPanel({
     try {
       const response = await fetch("/api/ai", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-QULTURE-Locale": locale,
+        },
         body: JSON.stringify({
           message: userMessage.content,
           locale,
@@ -505,7 +540,7 @@ export function AIPanel({
 
   function handleInitialAction(value: string) {
     trackEvent("AI_QUICK_ACTION_CLICKED", { kind: "prompt" }, { locale });
-    if (!quickActions?.length && value === text.quick[text.quick.length - 1]) {
+    if (usesDefaultQuickActions && value === text.quick[text.quick.length - 1]) {
       setHandoffOpen(true);
       return;
     }
@@ -559,7 +594,7 @@ export function AIPanel({
         }}
       >
         <span>AI</span>
-        <span className="ai-floating-button__label">ASSIST</span>
+        <span className="ai-floating-button__label">{text.assistLabel}</span>
       </button>
       {open ? (
         <button aria-label={text.close} className="overlay-backdrop" type="button" onClick={close} />
@@ -615,7 +650,7 @@ export function AIPanel({
             messages.map((message) => (
               <article key={message.id} className="ai-message" data-role={message.role}>
                 <p className="q-meta">
-                  {message.role === "user" ? (locale === "ru" ? "Вы" : "Сіз") : "QULTURE AI"}
+                  {message.role === "user" ? text.you : "QULTURE AI"}
                 </p>
                 <p>{message.content}</p>
                 {message.actions?.length ? (

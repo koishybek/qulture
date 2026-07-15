@@ -10,7 +10,7 @@ import { absoluteSiteUrl, configuredSiteOrigin } from "@/lib/site-origin";
 import "./globals.css";
 
 const siteOrigin = configuredSiteOrigin();
-const defaultCanonical = absoluteSiteUrl(siteOrigin, "/ru");
+const englishCanonical = absoluteSiteUrl(siteOrigin, "/en");
 const russianCanonical = absoluteSiteUrl(siteOrigin, "/ru");
 const kazakhCanonical = absoluteSiteUrl(siteOrigin, "/kz");
 const heroImage = absoluteSiteUrl(siteOrigin, "/media/hero/hero-poster.png");
@@ -22,19 +22,29 @@ export const metadata: Metadata = {
     template: "%s — QULTURE",
   },
   description:
-    "Городская одежда для ветра, слоёв и движения. QULTURE, Astana.",
+    "Urban apparel designed for wind, layers, and movement. QULTURE, Astana.",
   applicationName: "QULTURE",
-  ...(defaultCanonical && russianCanonical && kazakhCanonical
+  ...(englishCanonical && russianCanonical && kazakhCanonical
     ? {
         alternates: {
-          canonical: defaultCanonical,
-          languages: { ru: russianCanonical, kk: kazakhCanonical },
+          canonical: englishCanonical,
+          languages: {
+            en: englishCanonical,
+            ru: russianCanonical,
+            kk: kazakhCanonical,
+            "x-default": englishCanonical,
+          },
         },
       }
     : {}),
   openGraph: {
     type: "website",
     siteName: "QULTURE",
+    title: "QULTURE — Designed for changing climates",
+    description:
+      "Urban apparel designed for wind, layers, and movement. QULTURE, Astana.",
+    locale: "en_US",
+    alternateLocale: ["ru_KZ", "kk_KZ"],
     ...(heroImage
       ? { images: [{ url: heroImage, width: 1024, height: 576 }] }
       : {}),

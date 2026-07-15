@@ -3,9 +3,10 @@
 import { FormEvent, useId, useState } from "react";
 import Link from "next/link";
 import { ArrowIcon } from "@/components/ui/icons";
+import type { Locale } from "@/lib/i18n";
 
 type WaitlistFormProps = {
-  locale: "ru" | "kz";
+  locale: Locale;
   compact?: boolean;
   source?: string;
   policyVersion?: string;
@@ -22,12 +23,42 @@ type WaitlistFormProps = {
 const DEFAULT_POLICY_VERSION = "2026-07-draft";
 
 const copy = {
+  en: {
+    name: "Name",
+    city: "City",
+    interest: "What are you interested in?",
+    size: "Size",
+    contact: "Email or phone",
+    choose: "Select",
+    astana: "Astana",
+    almaty: "Almaty",
+    other: "Another city",
+    set: "Set",
+    top: "Top",
+    pants: "Pants",
+    unknown: "I don't know yet",
+    service: "I agree to receive a service notification when the item is ready",
+    restock: "I agree to receive a service notification when the selected option is back in stock",
+    selectedVariant: "Restock request",
+    marketing: "I agree to receive QULTURE news separately",
+    policy: "Before submitting, please review the Privacy Policy draft and consent terms.",
+    privacyLink: "Privacy",
+    consentLink: "Consent",
+    policyVersion: "Text version",
+    submit: "Notify me when ready",
+    pending: "Saving…",
+    success: "Done. We saved your interest and consent choices.",
+    error: "We couldn’t save your request. Check your contact details and try again.",
+    policyChanged: "The policy text has changed. Refresh the page and review it again before submitting.",
+    unavailable: "Contact collection is temporarily unavailable until the policy is confirmed.",
+    invalidContext: "The selected product or option is no longer available. Return to the catalogue and select it again.",
+  },
   ru: {
     name: "Имя",
     city: "Город",
     interest: "Что вас интересует",
     size: "Размер",
-    contact: "Email или телефон",
+    contact: "Электронная почта или телефон",
     choose: "Выберите",
     astana: "Астана",
     almaty: "Алматы",
@@ -57,7 +88,7 @@ const copy = {
     city: "Қала",
     interest: "Сізді не қызықтырады",
     size: "Өлшем",
-    contact: "Email немесе телефон",
+    contact: "Электрондық пошта немесе телефон",
     choose: "Таңдаңыз",
     astana: "Астана",
     almaty: "Алматы",

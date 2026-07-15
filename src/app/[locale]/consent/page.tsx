@@ -4,10 +4,16 @@ import { LegalPageView } from "@/components/content/content-page";
 import { CookiePreferencesButton } from "@/components/content/cookie-preferences-button";
 import { createPageMetadata } from "@/content/metadata";
 import { consentContent } from "@/content/policies";
-import { parseLocale } from "@/lib/i18n";
+import { parseLocale, type Locale } from "@/lib/i18n";
 import { getPublicLegalPage } from "@/lib/content/public-content";
 
 type ConsentPageProps = { params: Promise<{ locale: string }> };
+
+const dataPreferencesLabels: Record<Locale, string> = {
+  en: "Open data settings",
+  ru: "Открыть настройки данных",
+  kz: "Дерек баптауларын ашу",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +25,7 @@ export async function generateMetadata({ params }: ConsentPageProps): Promise<Me
 
 export default async function ConsentPage({ params }: ConsentPageProps) {
   const locale = parseLocale((await params).locale);
-  const label = locale === "ru" ? "Открыть настройки данных" : "Дерек баптауларын ашу";
+  const label = dataPreferencesLabels[locale];
   const page = await getPublicLegalPage(locale, consentContent[locale], ["consent"]);
   return (
     <LegalPageView

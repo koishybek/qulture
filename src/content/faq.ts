@@ -2,6 +2,98 @@ import type { Localized } from "@/lib/i18n";
 import type { FaqPage } from "./types";
 
 export const faqContent: Localized<FaqPage> = {
+  en: {
+    seo: {
+      title: "Questions and answers",
+      description:
+        "Clear answers about the QULTURE launch, products, sizing, technology, notifications and future commerce.",
+    },
+    eyebrow: "FAQ / CURRENT ANSWERS",
+    title: "What is known now",
+    lead:
+      "We answer only from published information. When a decision is not yet approved, we say that plainly.",
+    status: "Updated as information is verified",
+    sections: [],
+    items: [
+      {
+        id: "can-i-buy",
+        question: "Can I buy QULTURE clothing already?",
+        answer: [
+          "No. The site is currently in pre-launch: live products, prices, stock and a sales date have not been published. We do not accept payment or create demonstration orders that resemble real ones.",
+        ],
+      },
+      {
+        id: "first-product",
+        question: "What is being developed first?",
+        answer: [
+          "The current product focus is an urban top and trousers. The architecture supports each component separately or as a set, while final models and variants will appear only after the catalogue is approved.",
+        ],
+      },
+      {
+        id: "separate-sizes",
+        question: "Will I be able to choose different sizes for the top and bottom?",
+        answer: [
+          "Yes. The product and digital architecture support independent sizing for each component. Available combinations will depend on the variants and stock that are actually published.",
+        ],
+      },
+      {
+        id: "temperature",
+        question: "What temperature range is the clothing designed for?",
+        answer: [
+          "There is no verified temperature range yet. QULTURE will not turn fabric weight into invented degrees. After testing, we will describe specific scenarios: time outside, activity, transport and layers used.",
+        ],
+        links: [{ href: "/technology", label: "How scenarios are verified" }],
+      },
+      {
+        id: "size-assist",
+        question: "Will QULTURE Assist choose my size exactly?",
+        answer: [
+          "No. It should not guarantee fit. Public size guidance will open after garment measurements and fit rules are available. The result will include a confidence level and the difference to adjacent sizes; when data is insufficient, the question is passed to a person.",
+        ],
+      },
+      {
+        id: "materials",
+        question: "What will the product be made from?",
+        answer: [
+          "The final composition has not been published. Material, function and care information will appear after a production sample is verified and the product team approves it. Until then, the site does not assign properties to a fabric.",
+        ],
+      },
+      {
+        id: "waitlist-marketing",
+        question: "Does joining the waitlist automatically subscribe me to marketing?",
+        answer: [
+          "No. A service notification about launch or restock and a marketing subscription are different purposes. Marketing requires a separate choice that can be withdrawn.",
+        ],
+        links: [{ href: "/consent", label: "How consent choices are separated" }],
+      },
+      {
+        id: "delivery-returns",
+        question: "What will delivery and returns look like?",
+        answer: [
+          "Delivery areas, cost, timing and legal terms are not approved yet. Before sales begin, they will be shown before payment and published in a separate versioned document. The current delivery page is clearly marked as a working draft.",
+        ],
+        links: [{ href: "/delivery-and-returns", label: "Delivery terms status" }],
+      },
+      {
+        id: "languages",
+        question: "Which languages does the site support?",
+        answer: [
+          "English, Russian and Kazakh are available as separate localized versions of the site. The language you choose applies to the public interface and editorial content.",
+        ],
+      },
+      {
+        id: "ai-sources",
+        question: "Where does QULTURE Assist get its answers?",
+        answer: [
+          "The assistant uses only published brand, product and policy records, and after commerce launches it will use current catalogue and order data through restricted tools. When a verified source is unavailable, the correct answer is to say so rather than invent one.",
+        ],
+      },
+    ],
+    related: [
+      { href: "/contacts", label: "Contact channels status" },
+      { href: "/journal", label: "Development journal" },
+    ],
+  },
   ru: {
     seo: {
       title: "Вопросы и ответы",
@@ -78,7 +170,7 @@ export const faqContent: Localized<FaqPage> = {
         id: "languages",
         question: "На каких языках работает сайт?",
         answer: [
-          "Русская и казахская версии доступны как отдельные локализованные страницы. Английская структура предусмотрена, но не публикуется до готовности и редакционной проверки контента.",
+          "Английская, русская и казахская версии доступны как отдельные локализованные страницы. Выбранный язык применяется ко всему публичному интерфейсу и редакционному контенту.",
         ],
       },
       {
@@ -170,7 +262,7 @@ export const faqContent: Localized<FaqPage> = {
         id: "languages",
         question: "Сайт қай тілдерде жұмыс істейді?",
         answer: [
-          "Орыс және қазақ нұсқалары бөлек локализацияланған бет ретінде қолжетімді. Ағылшын құрылымы қарастырылған, бірақ контент дайын болып, редакциялық тексеруден өткенше жарияланбайды.",
+          "Ағылшын, орыс және қазақ нұсқалары бөлек локализацияланған бет ретінде қолжетімді. Таңдалған тіл бүкіл ашық интерфейс пен редакциялық контентке қолданылады.",
         ],
       },
       {

@@ -2,6 +2,89 @@ import type { Localized } from "@/lib/i18n";
 import type { EditorialPage } from "./types";
 
 export const technologyContent: Localized<EditorialPage> = {
+  en: {
+    seo: {
+      title: "Technology and product logic",
+      description:
+        "How QULTURE approaches materials, fit, layers and product validation without unsupported claims.",
+    },
+    eyebrow: "TECHNOLOGY / PROCESS",
+    title: "Function begins with context",
+    lead:
+      "We do not call every detail technology. At QULTURE, it is the link between a city scenario, construction, clear data and validation before a claim is published.",
+    status: "Development method / pre-launch",
+    sections: [
+      {
+        id: "city-context",
+        eyebrow: "01 / CONTEXT",
+        title: "The city changes conditions faster than the route",
+        paragraphs: [
+          "On one journey, a person may move through wind, a car or public transport, then indoors. We therefore consider a product as part of a sequence of real conditions, not as an answer to abstract weather.",
+          "For each scenario, the team describes time outside, activity, transport and layers separately. Only then can a recommendation be made clearly.",
+        ],
+      },
+      {
+        id: "layer-system",
+        eyebrow: "02 / SYSTEM",
+        title: "Layers without universal claims",
+        paragraphs: [
+          "The current product focus is an urban top and trousers that work together or separately. The system is designed to let the two components be sized independently.",
+          "Solo, with a light base layer and under outerwear are validation directions, not ready-made temperature promises. Final guidance will appear with approved material and fit data.",
+        ],
+      },
+      {
+        id: "fit",
+        eyebrow: "03 / FIT",
+        title: "Fit is a measurable system",
+        paragraphs: [
+          "A size recommendation should not rely on height and weight alone. It needs garment measurements, key body measurements, preferred ease and the layer worn underneath.",
+          "When data is insufficient or measurements fall between ranges, the assistant should show alternatives and say when confidence is low rather than guess.",
+        ],
+        bullets: [
+          "Garment measurements for every published size.",
+          "A comparison of adjacent sizes and silhouette changes.",
+          "Fit tests across proportions and layering options.",
+          "Documented exceptions and a clear path to human support.",
+        ],
+      },
+      {
+        id: "materials",
+        eyebrow: "04 / MATERIALS",
+        title: "Plain language first, specification alongside it",
+        paragraphs: [
+          "Composition, construction and care instructions are published after approval by the product team. Until then, the site deliberately does not assign waterproofness, wind protection, a temperature range or other properties to a fabric.",
+          "A final product page will explain the practical effect first, then the exact term, limitation and source of evidence. That supports a decision without turning product copy into advertising science.",
+        ],
+      },
+      {
+        id: "verification",
+        eyebrow: "05 / PROOF",
+        title: "What needs to be verified before launch",
+        paragraphs: [
+          "Every product claim moves from a working assumption to an approved record. The site and QULTURE Assist use only the published version of the data.",
+        ],
+        bullets: [
+          "Composition and care are checked against the final garment.",
+          "Measurements are repeatable and linked to a specific pattern version.",
+          "Wear scenarios describe conditions and limits without invented degrees.",
+          "The verification date and information owner are recorded in the content system.",
+        ],
+        note: "This page describes a development process. It is not a specification for a product that has not yet been published.",
+      },
+    ],
+    related: [
+      {
+        href: "/journal/building-qulture-openly",
+        label: "How we are building QULTURE openly",
+        description: "Our first progress note on the boundaries of the pre-launch version.",
+      },
+      {
+        href: "/faq",
+        label: "Questions and answers",
+        description: "Short answers about launch, sizing and verified information.",
+      },
+    ],
+  },
   ru: {
     seo: {
       title: "Технологии и логика продукта",
@@ -171,6 +254,65 @@ export const technologyContent: Localized<EditorialPage> = {
 };
 
 export const aboutContent: Localized<EditorialPage> = {
+  en: {
+    seo: {
+      title: "About QULTURE",
+      description:
+        "QULTURE is an urban apparel project from Astana, designed for changing conditions across Central Asia.",
+    },
+    eyebrow: "ABOUT / ASTANA",
+    title: "Observe the city. Build honestly.",
+    lead:
+      "QULTURE is being built in Astana around one simple task: make urban clothing clear to choose and appropriate through a changing day.",
+    status: "Brand in development",
+    sections: [
+      {
+        id: "origin",
+        eyebrow: "01 / STARTING POINT",
+        title: "Changing climates are an everyday context",
+        paragraphs: [
+          "In Central Asia, clothing needs to consider more than the season. It needs to account for transitions between street, transport and interior. QULTURE begins by observing those transitions, not by styling an abstract idea of technology.",
+          "Astana is both the project’s place of origin and its design context. We use that context functionally, without decorative national motifs added for effect.",
+        ],
+      },
+      {
+        id: "product",
+        eyebrow: "02 / PRODUCT",
+        title: "A system instead of one rigid scenario",
+        paragraphs: [
+          "The first product focus is an urban top and trousers. They can be considered as a set or as separate pieces, with independent sizing for top and bottom.",
+          "Final products, prices, colours, composition and launch timing have not been published. We do not fill that gap with demonstration promises.",
+        ],
+      },
+      {
+        id: "principles",
+        eyebrow: "03 / PRINCIPLES",
+        title: "Quiet presentation, precise information",
+        paragraphs: [
+          "A good product page should quickly explain why a piece exists, how to choose a size, what is confirmed and where the limits are. For us, commercial clarity matters more than a long manifesto.",
+        ],
+        bullets: [
+          "Do not publish unverified specifications, dates or reviews.",
+          "Separate facts, working assumptions and plans.",
+          "Give people control over language, data and contact preferences.",
+          "Develop the product and its digital service as one system.",
+        ],
+      },
+      {
+        id: "progress",
+        eyebrow: "04 / NOW",
+        title: "Pre-launch without a staged store",
+        paragraphs: [
+          "For now, the site is a transparent foundation for the future store: it explains the approach, collects only the interest a visitor chooses and shows progress. Commerce functions will open after an approved catalogue and operational terms are in place.",
+          "In the Journal, we record decisions that can already be explained publicly and mark what still needs validation.",
+        ],
+      },
+    ],
+    related: [
+      { href: "/technology", label: "Our approach to technology" },
+      { href: "/journal", label: "Development journal" },
+    ],
+  },
   ru: {
     seo: {
       title: "О QULTURE",
@@ -292,6 +434,51 @@ export const aboutContent: Localized<EditorialPage> = {
 };
 
 export const contactsContent: Localized<EditorialPage> = {
+  en: {
+    seo: {
+      title: "Contacts",
+      description: "The status of QULTURE’s official channels and where to find verified project information.",
+    },
+    eyebrow: "CONTACTS / PRE-LAUNCH",
+    title: "Contact without invented details",
+    lead:
+      "An official support address, phone number and seller details must be confirmed before publication and before commerce begins.",
+    status: "Contact details are pending confirmation",
+    sections: [
+      {
+        id: "current-status",
+        title: "What is available now",
+        paragraphs: [
+          "The project is being built in Astana, Kazakhstan. In this pre-launch version, we intentionally do not publish an unverified email address, phone number, business hours or legal address.",
+          "Answers about the current product status, development principles and data handling are available in the FAQ and the relevant sections of the site.",
+        ],
+      },
+      {
+        id: "before-launch",
+        title: "What will be published before orders open",
+        paragraphs: [
+          "Before commerce is enabled, this page must publish the seller’s name, an official support channel, an address for formal requests and response times. Those details will be reviewed by the business owner and an appropriate specialist.",
+        ],
+        bullets: [
+          "An official email address and primary support channel.",
+          "Seller details and an address for requests.",
+          "A route for questions about orders, payment, delivery and returns.",
+          "A separate route for B2B and press requests, if approved.",
+        ],
+      },
+      {
+        id: "safety",
+        title: "How to verify a message from QULTURE",
+        paragraphs: [
+          "Until official channels are published here, do not share payment details or documents with accounts claiming to represent QULTURE. Once launched, this page will hold the current list of channels.",
+        ],
+      },
+    ],
+    related: [
+      { href: "/faq", label: "Open the FAQ" },
+      { href: "/privacy", label: "How data will be handled" },
+    ],
+  },
   ru: {
     seo: {
       title: "Контакты",
@@ -385,6 +572,50 @@ export const contactsContent: Localized<EditorialPage> = {
 };
 
 export const accountContent: Localized<EditorialPage> = {
+  en: {
+    seo: {
+      title: "Account",
+      description: "The status of the QULTURE account area during pre-launch.",
+    },
+    eyebrow: "ACCOUNT / PRE-LAUNCH",
+    title: "An account is not needed yet",
+    lead:
+      "There is no registration or demonstration order flow before commerce launches. The account area will open with real orders.",
+    status: "Available when commerce opens",
+    sections: [
+      {
+        id: "why-closed",
+        title: "Why this area is closed for now",
+        paragraphs: [
+          "Creating an empty account is not useful and would require unnecessary personal data. During pre-launch, launch updates are available without a profile and consent for a specific notification is stored separately.",
+        ],
+      },
+      {
+        id: "future-scope",
+        title: "What will be available after commerce launches",
+        paragraphs: [
+          "Once the catalogue, seller, payment and delivery terms are approved, the account will bring together only the actions needed for real orders.",
+        ],
+        bullets: [
+          "Order status and a tracking link when supplied by the delivery provider.",
+          "Order contents, component sizes and pre-order status.",
+          "An exchange or return request under the approved policy.",
+          "Management of saved data and consent choices.",
+        ],
+      },
+      {
+        id: "guest-checkout",
+        title: "Buying without mandatory registration",
+        paragraphs: [
+          "Future checkout includes a guest path. Creating a profile should not be a condition of payment and can be offered separately after an order.",
+        ],
+      },
+    ],
+    related: [
+      { href: "/faq", label: "Launch questions" },
+      { href: "/privacy", label: "Data-handling principles" },
+    ],
+  },
   ru: {
     seo: {
       title: "Личный кабинет",

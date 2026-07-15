@@ -13,6 +13,7 @@ import type {
   PublicCollectionSummary,
   PublicProductView,
 } from "@/lib/commerce/public-catalog";
+import { commerceIntlLocale, commerceText } from "@/lib/commerce/locale";
 
 type PublicCatalogPageProps = {
   locale: PublicCatalogLocale;
@@ -32,7 +33,7 @@ function formatMoney(
   locale: PublicCatalogLocale,
 ): string {
   try {
-    return new Intl.NumberFormat(locale === "ru" ? "ru-KZ" : "kk-KZ", {
+    return new Intl.NumberFormat(commerceIntlLocale(locale), {
       style: "currency",
       currency,
       maximumFractionDigits: 0,
@@ -47,7 +48,7 @@ function priceLabel(
   locale: PublicCatalogLocale,
 ): string {
   if (product.priceFromMinor === null) {
-    return locale === "ru" ? "Цена уточняется" : "Бағасы нақтылануда";
+    return commerceText(locale, "Price on request", "Цена уточняется", "Бағасы нақтылануда");
   }
   if (
     product.priceToMinor !== null &&
@@ -67,15 +68,15 @@ function availabilityLabel(
       variant.availability === "in_stock" ||
       variant.availability === "low_stock",
   );
-  if (hasStock) return locale === "ru" ? "В наличии" : "Қолда бар";
+  if (hasStock) return commerceText(locale, "In stock", "В наличии", "Қолда бар");
   const hasPreorder = product.variants.some(
     (variant) => variant.availability === "preorder",
   );
-  if (hasPreorder) return locale === "ru" ? "Предзаказ" : "Алдын ала тапсырыс";
+  if (hasPreorder) return commerceText(locale, "Pre-order", "Предзаказ", "Алдын ала тапсырыс");
   if (product.variants.length === 0 || product.priceFromMinor === null) {
-    return locale === "ru" ? "Скоро" : "Жақында";
+    return commerceText(locale, "Coming soon", "Скоро", "Жақында");
   }
-  return locale === "ru" ? "Нет в наличии" : "Сатылып кетті";
+  return commerceText(locale, "Unavailable", "Нет в наличии", "Сатылып кетті");
 }
 
 function ProductCard({
@@ -123,6 +124,7 @@ function ProductCard({
         id: variant.id,
         size: variant.size,
         color: variant.color,
+        colorByLocale: variant.colorByLocale,
         unitPrice: variant.priceMinor,
         availability:
           variant.availability === "preorder"
@@ -146,6 +148,7 @@ function ProductCard({
       locale={locale}
       media={cardMedia}
       name={product.name}
+      nameByLocale={product.nameByLocale}
       price={priceLabel(product, locale)}
       productId={product.id}
       quickVariants={quickVariants}
@@ -167,8 +170,9 @@ export function PublicCatalogPage({
   searchOpen = false,
   searchQuery = "",
 }: PublicCatalogPageProps) {
-  const isRu = locale === "ru";
-  const normalizedQuery = searchQuery.trim().toLocaleLowerCase(locale === "ru" ? "ru" : "kk");
+  const t = (en: string, ru: string, kz: string) => commerceText(locale, en, ru, kz);
+  const languageTag = locale === "en" ? "en" : locale === "ru" ? "ru" : "kk";
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase(languageTag);
   const visibleProducts = normalizedQuery
     ? products.filter((product) =>
         [
@@ -177,7 +181,7 @@ export function PublicCatalogPage({
           product.category,
           ...product.technologyTags,
           ...product.variants.flatMap((variant) => [variant.color, variant.size]),
-        ].some((value) => value.toLocaleLowerCase(locale === "ru" ? "ru" : "kk").includes(normalizedQuery)),
+        ].some((value) => value.toLocaleLowerCase(languageTag).includes(normalizedQuery)),
       )
     : products;
   return (
@@ -186,21 +190,23 @@ export function PublicCatalogPage({
         <div>
           <p className="q-meta">{eyebrow}</p>
           <h1 className="q-display q-display--medium">
-            {title ?? (isRu ? "Каталог" : "Каталог")}
+            {title ?? t("Shop", "Каталог", "Каталог")}
           </h1>
         </div>
         <p>
           {description ??
-            (isRu
-              ? "Опубликованные модули QULTURE. Доступность и цена зависят от выбранного варианта."
-              : "QULTURE жарияланған модульдері. Қолжетімділік пен баға таңдалған нұсқаға байланысты.")}
+            t(
+              "Published QULTURE modules. Availability and price depend on the selected variant.",
+              "Опубликованные модули QULTURE. Доступность и цена зависят от выбранного варианта.",
+              "QULTURE жарияланған модульдері. Қолжетімділік пен баға таңдалған нұсқаға байланысты.",
+            )}
         </p>
       </header>
 
       {searchOpen ? (
         <form action={`/${locale}/shop`} className="public-catalog-search" method="get" role="search">
           <label htmlFor="catalog-search">
-            {isRu ? "Поиск по опубликованному каталогу" : "Жарияланған каталогтан іздеу"}
+            {t("Search the published catalogue", "Поиск по опубликованному каталогу", "Жарияланған каталогтан іздеу")}
           </label>
           <span>
             <input
@@ -209,20 +215,20 @@ export function PublicCatalogPage({
               id="catalog-search"
               maxLength={80}
               name="q"
-              placeholder={isRu ? "Название, цвет или размер" : "Атауы, түсі немесе өлшемі"}
+              placeholder={t("Name, colour or size", "Название, цвет или размер", "Атауы, түсі немесе өлшемі")}
               type="search"
             />
-            <button type="submit">{isRu ? "Найти" : "Іздеу"}</button>
+            <button type="submit">{t("Search", "Найти", "Іздеу")}</button>
           </span>
         </form>
       ) : null}
 
       <nav
-        aria-label={isRu ? "Разделы каталога" : "Каталог бөлімдері"}
+        aria-label={t("Catalogue sections", "Разделы каталога", "Каталог бөлімдері")}
         className="demo-shop__tools"
       >
         <span>
-          {visibleProducts.length.toString().padStart(2, "0")} {isRu ? "ТОВАРОВ" : "ТАУАР"}
+          {visibleProducts.length.toString().padStart(2, "0")} {t("ITEMS", "ТОВАРОВ", "ТАУАР")}
         </span>
         {collections.map((collection) => (
           <Link href={`/${locale}/collections/${collection.slug}`} key={collection.slug}>
@@ -231,7 +237,7 @@ export function PublicCatalogPage({
         ))}
         {bundles[0] ? (
           <Link href={`/${locale}/build-a-set?bundle=${encodeURIComponent(bundles[0].slug)}`}>
-            {isRu ? "СОБРАТЬ КОМПЛЕКТ" : "ЖИНТЫҚ ҚҰРУ"} <span aria-hidden="true">→</span>
+            {t("BUILD A SET", "СОБРАТЬ КОМПЛЕКТ", "ЖИНТЫҚ ҚҰРУ")} <span aria-hidden="true">→</span>
           </Link>
         ) : null}
       </nav>
@@ -248,22 +254,22 @@ export function PublicCatalogPage({
             <p className="q-meta">QULTURE / CATALOG STATUS</p>
             <h2>
               {normalizedQuery
-                ? isRu
-                  ? "Ничего не найдено"
-                  : "Ештеңе табылмады"
-                : isRu
-                  ? "Опубликованных товаров пока нет"
-                  : "Әзірге жарияланған тауарлар жоқ"}
+                ? t("Nothing found", "Ничего не найдено", "Ештеңе табылмады")
+                : t("No published products yet", "Опубликованных товаров пока нет", "Әзірге жарияланған тауарлар жоқ")}
             </h2>
           </div>
           <p>
             {normalizedQuery
-              ? isRu
-                ? `В опубликованном каталоге нет совпадений для «${searchQuery}».`
-                : `Жарияланған каталогта «${searchQuery}» сұрауына сәйкестік жоқ.`
-              : isRu
-                ? "Каталог откроется здесь после публикации товаров командой QULTURE."
-                : "QULTURE командасы тауарларды жариялағаннан кейін каталог осы жерде ашылады."}
+              ? t(
+                  `There are no matches for “${searchQuery}” in the published catalogue.`,
+                  `В опубликованном каталоге нет совпадений для «${searchQuery}».`,
+                  `Жарияланған каталогта «${searchQuery}» сұрауына сәйкестік жоқ.`,
+                )
+              : t(
+                  "The catalogue will open here once the QULTURE team publishes products.",
+                  "Каталог откроется здесь после публикации товаров командой QULTURE.",
+                  "QULTURE командасы тауарларды жариялағаннан кейін каталог осы жерде ашылады.",
+                )}
           </p>
         </div>
       )}

@@ -266,7 +266,7 @@ export function mergeManagedFaqPage(
 }
 
 async function loadManagedContent(locale: Locale, slugs: readonly string[]) {
-  const databaseLocale = locale === "kz" ? "KZ" : "RU";
+  const databaseLocale = locale === "en" ? "EN" : locale === "kz" ? "KZ" : "RU";
   const namespaces = slugs.flatMap((slug) => [slug, `page.${slug}`]);
   try {
     const [rawPages, translations] = await Promise.all([

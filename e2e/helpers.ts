@@ -9,6 +9,14 @@ const STORED_CONSENT = {
   updatedAt: "2026-07-15T00:00:00.000Z",
 };
 
+type ConsentLocale = "en" | "ru" | "kz";
+
+const consentRejectLabel: Record<ConsentLocale, string> = {
+  en: "Reject optional cookies",
+  ru: "Отклонить необязательные",
+  kz: "Қосымша cookie файлдарынан бас тарту",
+};
+
 /**
  * Keeps smoke tests focused on the requested flow. Consent behavior has unit/API
  * coverage; these tests start from a valid necessary-only choice.
@@ -18,6 +26,7 @@ export async function preparePublicSession(page: Page, clearCart = false) {
     ({ consent, shouldClearCart }) => {
       window.localStorage.setItem("qulture-consent-v1", JSON.stringify(consent));
       window.sessionStorage.setItem("qulture-ai-teaser-dismissed", "1");
+      window.sessionStorage.setItem("qulture-ai-teaser-dismissed-v2", "1");
       if (shouldClearCart) window.localStorage.removeItem("qulture-cart-v1");
     },
     { consent: STORED_CONSENT, shouldClearCart: clearCart },
@@ -27,18 +36,11 @@ export async function preparePublicSession(page: Page, clearCart = false) {
 /** React mounts the consent manager asynchronously. This is a defensive
  * fallback for engines that do not expose origin localStorage to init scripts
  * until after the first navigation. */
-export async function dismissConsentIfPresent(page: Page) {
-  const decline = page
-    .getByRole("button", {
-      name: "Отклонить необязательные",
-      exact: true,
-    })
-    .or(
-      page.getByRole("button", {
-        name: "Қосымшадан бас тарту",
-        exact: true,
-      }),
-    );
+export async function dismissConsentIfPresent(page: Page, locale: ConsentLocale = "en") {
+  const decline = page.getByRole("button", {
+    name: consentRejectLabel[locale],
+    exact: true,
+  });
 
   try {
     await decline.waitFor({ state: "visible", timeout: 1_500 });

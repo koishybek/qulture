@@ -22,7 +22,8 @@ export const AI_TOOL_NAMES = [
 ] as const;
 
 export type AIToolName = (typeof AI_TOOL_NAMES)[number];
-export type AILocale = "ru" | "kz";
+export const AI_LOCALES = ["ru", "kz", "en"] as const;
+export type AILocale = (typeof AI_LOCALES)[number];
 
 export type ToolError = {
   code: string;

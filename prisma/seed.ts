@@ -19,7 +19,7 @@ async function seedSettings(): Promise<void> {
       demoMode: false,
       catalogVisible: false,
       controlledPreview: true,
-      defaultLocale: "RU",
+      defaultLocale: "EN",
       currency: "KZT",
       consentPolicyVersion: "2026-07-draft",
     },
@@ -29,7 +29,7 @@ async function seedSettings(): Promise<void> {
       demoMode: false,
       catalogVisible: false,
       controlledPreview: true,
-      defaultLocale: "RU",
+      defaultLocale: "EN",
       currency: "KZT",
       consentPolicyVersion: "2026-07-draft",
       sectionVisibility: {
@@ -40,6 +40,11 @@ async function seedSettings(): Promise<void> {
         catalog: false,
       },
       homeContent: {
+        en: {
+          eyebrow: "QULTURE / CENTRAL ASIA",
+          title: "Urban layers for changing climates",
+          note: "Development is ongoing. Confirmed specifications and launch details will be published before sales open.",
+        },
         ru: {
           eyebrow: "QULTURE / CENTRAL ASIA",
           title: "Городской слой для меняющегося климата",
@@ -55,6 +60,11 @@ async function seedSettings(): Promise<void> {
       aiTeaserDelayMs: 6500,
       aiTeaserFrequency: "once_per_session",
       aiQuickActions: {
+        en: [
+          "Help me choose a size",
+          "What works for my climate?",
+          "Availability and delivery",
+        ],
         ru: [
           "Помочь выбрать размер",
           "Что подойдёт под мой климат?",
@@ -72,6 +82,12 @@ async function seedSettings(): Promise<void> {
 
 async function seedKnowledge(): Promise<void> {
   const entries = [
+    {
+      language: "EN" as const,
+      title: "Launch status and information verification",
+      content:
+        "The sales launch date is not confirmed yet. QULTURE will publish prices, availability, materials, and specifications only after internal verification. Until then, visitors can leave a contact for the waitlist.",
+    },
     {
       language: "RU" as const,
       title: "Статус запуска и подтверждение информации",
@@ -154,6 +170,13 @@ async function seedJournal(): Promise<void> {
 
 async function seedTranslations(): Promise<void> {
   const translations = [
+    ["navigation", "home", "EN", "Home"],
+    ["navigation", "about", "EN", "About"],
+    ["navigation", "technology", "EN", "Technology"],
+    ["navigation", "journal", "EN", "Journal"],
+    ["navigation", "waitlist", "EN", "Waitlist"],
+    ["common", "coming_soon", "EN", "Coming soon"],
+    ["ai", "open", "EN", "Open assistant"],
     ["navigation", "home", "RU", "Главная"],
     ["navigation", "home", "KZ", "Басты бет"],
     ["navigation", "about", "RU", "О бренде"],
@@ -190,11 +213,18 @@ async function seedTranslations(): Promise<void> {
 async function seedDemoCommerce(): Promise<void> {
   const collection = await db.collection.upsert({
     where: { slug: "demo-commerce-fixtures" },
-    update: { status: "DRAFT", isDemo: true },
+    update: {
+      status: "DRAFT",
+      isDemo: true,
+      nameEn: "DEMO: commerce check",
+      descriptionEn: "Non-public data for test routes only.",
+    },
     create: {
       slug: "demo-commerce-fixtures",
+      nameEn: "DEMO: commerce check",
       nameRu: "DEMO: проверка commerce",
       nameKz: "DEMO: commerce тексеруі",
+      descriptionEn: "Non-public data for test routes only.",
       descriptionRu: "Непубличные данные только для тестовых маршрутов.",
       descriptionKz: "Тек сынақ маршруттарына арналған жария емес деректер.",
       status: "DRAFT",
@@ -208,12 +238,16 @@ async function seedDemoCommerce(): Promise<void> {
       status: "DRAFT",
       isDemo: true,
       priceMinor: 120_000,
+      nameEn: "DEMO: city top",
+      descriptionEn: "Demo data for interface verification. This is not a public product.",
       collections: { set: [{ id: collection.id }] },
     },
     create: {
       slug: "demo-city-top",
+      nameEn: "DEMO: city top",
       nameRu: "DEMO: городской верх",
       nameKz: "DEMO: қалалық үстіңгі бөлік",
+      descriptionEn: "Demo data for interface verification. This is not a public product.",
       descriptionRu:
         "Демонстрационная запись для проверки интерфейса. Не является публичным товаром.",
       descriptionKz:
@@ -233,12 +267,16 @@ async function seedDemoCommerce(): Promise<void> {
       status: "DRAFT",
       isDemo: true,
       priceMinor: 90_000,
+      nameEn: "DEMO: city trousers",
+      descriptionEn: "Demo data for interface verification. This is not a public product.",
       collections: { set: [{ id: collection.id }] },
     },
     create: {
       slug: "demo-city-trousers",
+      nameEn: "DEMO: city trousers",
       nameRu: "DEMO: городские брюки",
       nameKz: "DEMO: қалалық шалбар",
+      descriptionEn: "Demo data for interface verification. This is not a public product.",
       descriptionRu:
         "Демонстрационная запись для проверки интерфейса. Не является публичным товаром.",
       descriptionKz:
@@ -267,12 +305,14 @@ async function seedDemoCommerce(): Promise<void> {
         sizeLabel: variant.sizeLabel,
         stock: variant.stock,
         reservedStock: 0,
+        colorNameEn: "DEMO: graphite",
         active: true,
         isDemo: true,
       },
       create: {
         productId: variant.productId,
         colorCode: "graphite-demo",
+        colorNameEn: "DEMO: graphite",
         colorNameRu: "DEMO: графит",
         colorNameKz: "DEMO: графит",
         sizeLabel: variant.sizeLabel,
@@ -292,11 +332,15 @@ async function seedDemoCommerce(): Promise<void> {
       discountType: "PERCENTAGE",
       discountValue: 1_000,
       isDemo: true,
+      nameEn: "DEMO: city set",
+      descriptionEn: "A non-public set for testing independent size selection.",
     },
     create: {
       slug: "demo-city-set",
+      nameEn: "DEMO: city set",
       nameRu: "DEMO: городской комплект",
       nameKz: "DEMO: қалалық жиынтық",
+      descriptionEn: "A non-public set for testing independent size selection.",
       descriptionRu: "Непубличный комплект для проверки раздельного выбора размеров.",
       descriptionKz: "Өлшемдерді бөлек таңдауды тексеруге арналған жария емес жиынтық.",
       status: "DRAFT",

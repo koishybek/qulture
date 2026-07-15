@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { trackEvent } from "@/lib/analytics/client";
+import { commerceIntlLocale, type CommerceLocale } from "@/lib/commerce/locale";
 
 export type CartLine = {
   id: string;
@@ -9,8 +10,10 @@ export type CartLine = {
   variantId: string;
   slug: string;
   name: string;
+  nameByLocale?: Partial<Record<CommerceLocale, string>>;
   role: "top" | "pants" | "single";
   color: string;
+  colorByLocale?: Partial<Record<CommerceLocale, string>>;
   size: string;
   quantity: number;
   unitPrice: number;
@@ -20,17 +23,20 @@ export type CartLine = {
   eta?: string;
   mediaSrc?: string;
   mediaAlt?: string;
+  mediaAltByLocale?: Partial<Record<CommerceLocale, string>>;
   bundleGroupId?: string;
   bundleDiscountPercent?: number;
   variantOptions?: Array<{
     variantId: string;
     size: string;
     color: string;
+    colorByLocale?: Partial<Record<CommerceLocale, string>>;
     unitPrice: number;
     availability: "in_stock" | "low_stock" | "preorder";
     eta?: string;
     mediaSrc?: string;
     mediaAlt?: string;
+    mediaAltByLocale?: Partial<Record<CommerceLocale, string>>;
   }>;
 };
 
@@ -42,7 +48,7 @@ type CartContextValue = {
   total: number;
   addLines: (lines: CartLine[]) => void;
   removeLine: (id: string) => void;
-  updateLine: (id: string, patch: Partial<Pick<CartLine, "quantity" | "size" | "color" | "variantId" | "unitPrice" | "availability" | "eta" | "mediaSrc" | "mediaAlt">>) => void;
+  updateLine: (id: string, patch: Partial<Pick<CartLine, "quantity" | "size" | "color" | "colorByLocale" | "variantId" | "unitPrice" | "availability" | "eta" | "mediaSrc" | "mediaAlt" | "mediaAltByLocale">>) => void;
   clear: () => void;
 };
 
@@ -114,7 +120,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const removeLine = useCallback((id: string) => setLines((current) => current.filter((line) => line.id !== id)), []);
-  const updateLine = useCallback((id: string, patch: Partial<Pick<CartLine, "quantity" | "size" | "color" | "variantId" | "unitPrice" | "availability" | "eta" | "mediaSrc" | "mediaAlt">>) => {
+  const updateLine = useCallback((id: string, patch: Partial<Pick<CartLine, "quantity" | "size" | "color" | "colorByLocale" | "variantId" | "unitPrice" | "availability" | "eta" | "mediaSrc" | "mediaAlt" | "mediaAltByLocale">>) => {
     setLines((current) => current.map((line) => line.id === id ? { ...line, ...patch, quantity: Math.max(1, patch.quantity ?? line.quantity) } : line));
     if (patch.size) trackEvent("SELECT_SIZE", { source: "cart" });
   }, []);
@@ -140,6 +146,18 @@ export function useCart() {
   return value;
 }
 
-export function formatKzt(amount: number, locale: "ru" | "kz" = "ru") {
-  return new Intl.NumberFormat(locale === "ru" ? "ru-KZ" : "kk-KZ", { style: "currency", currency: "KZT", maximumFractionDigits: 0 }).format(amount);
+export function displayCartLineName(line: CartLine, locale: CommerceLocale): string {
+  return line.nameByLocale?.[locale] ?? (locale === "en" ? "QULTURE item" : line.name);
+}
+
+export function displayCartLineColor(line: CartLine, locale: CommerceLocale): string {
+  return line.colorByLocale?.[locale] ?? (locale === "en" ? "QULTURE colour" : line.color);
+}
+
+export function displayCartMediaAlt(line: CartLine, locale: CommerceLocale): string {
+  return line.mediaAltByLocale?.[locale] ?? (locale === "en" ? displayCartLineName(line, locale) : line.mediaAlt ?? "");
+}
+
+export function formatKzt(amount: number, locale: CommerceLocale = "en") {
+  return new Intl.NumberFormat(commerceIntlLocale(locale), { style: "currency", currency: "KZT", maximumFractionDigits: 0 }).format(amount);
 }

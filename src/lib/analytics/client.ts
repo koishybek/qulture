@@ -1,3 +1,5 @@
+import type { Locale } from "@/lib/i18n";
+
 type AnalyticsPayload = Record<string, string | number | boolean | null>;
 
 const SENSITIVE_KEYS = /email|phone|address|name|card|password|measurement|message/i;
@@ -5,7 +7,7 @@ const SENSITIVE_KEYS = /email|phone|address|name|card|password|measurement|messa
 export function trackEvent(
   name: string,
   payload: AnalyticsPayload = {},
-  options: { locale?: "ru" | "kz"; category?: "NECESSARY" | "ANALYTICS" | "MARKETING" } = {},
+  options: { locale?: Locale; category?: "NECESSARY" | "ANALYTICS" | "MARKETING" } = {},
 ) {
   const category = options.category ?? "ANALYTICS";
   if (category !== "NECESSARY" && typeof window !== "undefined") {
